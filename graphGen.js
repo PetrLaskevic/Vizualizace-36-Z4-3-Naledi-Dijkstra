@@ -26,39 +26,7 @@ class Queue {
   }
 
 
-let maze = `
-#..
-.#.
-...
-...`;
-
-// Convert the maze string into a 2D array
-//trim tam dela to same co [1:] v py verzi
-// proste protoze let maze \n prvni radka (KDYBY TO BYLO NA STEJNE RADCE LIKE SO:
-//: let maze = #... tak to tam neni potreba
-maze = maze.trim().split('\n').map(row => row.split('')); //maze.trim().split('\n').map(row => row.split(''));
-console.log(maze);
-
-// Setting corners
-if (maze[0][0] !== '#') {
-    maze[0][0] = 'a';
-}
-
-if (maze[0][maze[0].length - 1] !== '#') {
-    maze[0][maze[0].length - 1] = 'a';
-}
-
-if (maze[maze.length - 1][0] !== '#') {
-    maze[maze.length - 1][0] = 'a';
-}
-
-if (maze[maze.length - 1][maze[0].length - 1] !== '#') {
-    maze[maze.length - 1][maze[0].length - 1] = 'a';
-}
-
-
-
-function markOkolniPole(row_zastaveni, column_zastaveni, pocet_rows, pocet_columns) {
+function markOkolniPole(row_zastaveni, column_zastaveni, maze, pocet_rows, pocet_columns) {
     // Assuming maze is a global variable
     let mozna_policka = [
         [row_zastaveni - 1, column_zastaveni, '|'],
@@ -80,42 +48,73 @@ function markOkolniPole(row_zastaveni, column_zastaveni, pocet_rows, pocet_colum
     });
 }
 
-// As borders are stops, setting them as such (as though the entire maze was surrounded by '#')
+function markEdgeStartsAndEnds(maze){
+    /*Marks nodes int the text maze where edges start and end, right before an obstacle ('#') or an edge of the map (where the person stops on the icy pavement).
+    It replaces '.' characters with one of three possible characters:
+        - with '-' for edges starting up and down from left and right sides of '#' like so:  '-#-'
+        - with '|' for edges starting left and right from top and bottom sides of '#' like so: |
+                                                                                               #
+                                                                                               |
+        - or 'a' for nodes where both | and - would be put (for better printing and memory efficiency) 
+    */
 
-// Setting the top edge with | to simplify graph generation code
-maze[0].forEach((znak, index) => {
-    if (znak === '.') {
-        maze[0][index] = '|';
+    // Convert the maze string into a 2D array
+    // in maze[x][y], x is the line number, y is the column number
+    maze = maze.trim().split('\n').map(row => row.split(''));
+
+    // Setting corners to 'a'
+    // as corners are both horizontally and vertically next to the edge of the map
+    if (maze[0][0] !== '#') {
+        maze[0][0] = 'a';
     }
-});
 
-// Setting the bottom edge with | to simplify graph generation code
-maze[maze.length - 1].forEach((znak, index) => {
-    if (znak === '.') {
-        maze[maze.length - 1][index] = '|';
+    if (maze[0][maze[0].length - 1] !== '#') {
+        maze[0][maze[0].length - 1] = 'a';
     }
-});
 
+    if (maze[maze.length - 1][0] !== '#') {
+        maze[maze.length - 1][0] = 'a';
+    }
 
-maze.forEach((radka, indexRadky) => {
-    console.log(indexRadky);
-    radka.forEach((znak, indexZnaku) => {
-        if (znak === '#') {
-            console.log("pos", indexRadky, indexZnaku);
-            markOkolniPole(indexRadky, indexZnaku, maze.length, maze[0].length);
+    if (maze[maze.length - 1][maze[0].length - 1] !== '#') {
+        maze[maze.length - 1][maze[0].length - 1] = 'a';
+    }
+
+    // As borders (=edges of the map) are stops, setting them as such (as though the entire maze was surrounded by '#'):
+
+    // Setting the top edge with | to simplify graph generation code
+    maze[0].forEach((znak, index) => {
+        if (znak === '.') {
+            maze[0][index] = '|';
         }
     });
-    // Setting left and right edges to - to simplify graph generation code
-    if (radka[radka.length - 1] === '.') {
-        maze[indexRadky][radka.length - 1] = '-';
-    }
-    if (radka[0] === '.') {
-        maze[indexRadky][0] = '-';
-    }
-});
 
-console.log(maze);
+    // Setting the bottom edge with | to simplify graph generation code
+    maze[maze.length - 1].forEach((znak, index) => {
+        if (znak === '.') {
+            maze[maze.length - 1][index] = '|';
+        }
+    });
 
+    //Mark the surrounding squares (políčka) of '#' with the '-', '|', 'a' characters
+    maze.forEach((radka, indexRadky) => {
+        console.log(indexRadky);
+        radka.forEach((znak, indexZnaku) => {
+            if (znak === '#') {
+                console.log("pos", indexRadky, indexZnaku);
+                markOkolniPole(indexRadky, indexZnaku, maze, maze.length, maze[0].length);
+            }
+        });
+        // Setting left and right edges to - to simplify graph generation code
+        if (radka[radka.length - 1] === '.') {
+            maze[indexRadky][radka.length - 1] = '-';
+        }
+        if (radka[0] === '.') {
+            maze[indexRadky][0] = '-';
+        }
+    });
+    return maze;
+}
 
 
 class Graf {
@@ -345,101 +344,109 @@ class HranyDoprava {
         this.lis = [];
     }
 }
+function mazeTextToGraph(maze){
+    maze = markEdgeStartsAndEnds(maze);
+    let graf = new Graf();
+    let hranyNahoru = [];
+    let hranyDolu = [];
+    for (let x = 0; x < maze[0].length; x++){
+        console.log("yeah")
+        hranyNahoru.push(new TwoItems("vertical"));
+        hranyDolu.push(new HranyDoprava("vertical"));
+    }
 
-let graf = new Graf();
-let hranyNahoru = [];
-let hranyDolu = [];
-for (let x = 0; x < maze[0].length; x++){
-    console.log("yeah")
-    hranyNahoru.push(new TwoItems("vertical"));
-    hranyDolu.push(new HranyDoprava("vertical"));
-}
+    maze.forEach((radka, indexRadky) => {
+        let hranyDoleva = new TwoItems("horizontal");
+        let hranyDoprava = new HranyDoprava("horizontal");
 
-maze.forEach((radka, indexRadky) => {
-    let hranyDoleva = new TwoItems("horizontal");
-    let hranyDoprava = new HranyDoprava("horizontal");
-
-    radka.forEach((znak, indexZnaku) => {
-        if(znak != '#'){
-            //initialize all 4 directions of edges
-            if(!hranyDoleva.setInitialValue){
+        radka.forEach((znak, indexZnaku) => {
+            if(znak != '#'){
+                //initialize all 4 directions of edges
+                if(!hranyDoleva.setInitialValue){
+                    hranyDoleva.pushO([indexRadky, indexZnaku]);
+                }
+                if(!hranyDoprava.setInitialValue){
+                    hranyDoprava.addHranaOdsud([indexRadky, indexZnaku]);
+                }
+                if(!hranyNahoru[indexZnaku].setInitialValue){
+                    hranyNahoru[indexZnaku].pushO([indexRadky, indexZnaku]);
+                }
+                if(!hranyDolu[indexZnaku].setInitialValue){
+                    hranyDolu[indexZnaku].addHranaOdsud([indexRadky, indexZnaku]);
+                }
+            }
+            if(['-', 'a'].includes(znak)){
                 hranyDoleva.pushO([indexRadky, indexZnaku]);
-            }
-            if(!hranyDoprava.setInitialValue){
-                hranyDoprava.addHranaOdsud([indexRadky, indexZnaku]);
-            }
-            if(!hranyNahoru[indexZnaku].setInitialValue){
-                hranyNahoru[indexZnaku].pushO([indexRadky, indexZnaku]);
-            }
-            if(!hranyDolu[indexZnaku].setInitialValue){
+                if(hranyDoleva.readyToOutput){
+                    graf.add(hranyDoleva.prevItem, [indexRadky, indexZnaku], hranyDoleva.numDots, 'undirected');
+                }
+                //from | to -#.
+                //     #.......
+                hranyDoprava.getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
+                    graf.add(...hrana);
+                    hranyDoprava.reset();
+                });
+
+                //vertical handling
+                hranyNahoru[indexZnaku].peekO([indexRadky, indexZnaku]);
+                if(hranyNahoru[indexZnaku].readyToOutput){
+                    graf.add([indexRadky, indexZnaku], hranyNahoru[indexZnaku].prevItem, hranyNahoru[indexZnaku].numDots, 'directed');
+                }
+                //hrana odsud dolu (do dolniho zastaveni)
                 hranyDolu[indexZnaku].addHranaOdsud([indexRadky, indexZnaku]);
             }
-        }
-        if(['-', 'a'].includes(znak)){
-            hranyDoleva.pushO([indexRadky, indexZnaku]);
-            if(hranyDoleva.readyToOutput){
-                graf.add(hranyDoleva.prevItem, [indexRadky, indexZnaku], hranyDoleva.numDots, 'undirected');
-            }
-            //from | to -#.
-			//     #.......
-            hranyDoprava.getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
-                graf.add(...hrana);
+            if(['|', 'a'].includes(znak)){
+                //prida orientovanou hranu z nejvic leveho volneho znaku do naseho znaku |
+                // JavaScript code
+                hranyDoleva.peekO([indexRadky, indexZnaku]);
+                if (hranyDoleva.readyToOutput) {
+                    graf.add([indexRadky, indexZnaku], hranyDoleva.prevItem, hranyDoleva.numDots, 'directed');
+                }
+
+                hranyDoprava.addHranaOdsud([indexRadky, indexZnaku]);
+
+                // vertical handling
+                hranyNahoru[indexZnaku].pushO([indexRadky, indexZnaku]);
+                if (hranyNahoru[indexZnaku].readyToOutput) {
+                    graf.add(hranyNahoru[indexZnaku].prevItem, [indexRadky, indexZnaku], hranyNahoru[indexZnaku].numDots, 'undirected');
+                }
+
+                // from - to |
+                // ...-#...
+                // ....|...
+                // ...|....
+                // ...#....
+                hranyDolu[indexZnaku].getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
+                    graf.add(...hrana);
+                    hranyDolu[indexZnaku].reset();
+                });
+            }else if(znak == '#'){ //pres krizky cesta z o do o nikdy nevede
+                hranyDoleva.reset();
+                hranyNahoru[indexZnaku].reset();
+                hranyNahoru[indexZnaku].reset();
                 hranyDoprava.reset();
-            });
-
-            //vertical handling
-            hranyNahoru[indexZnaku].peekO([indexRadky, indexZnaku]);
-			if(hranyNahoru[indexZnaku].readyToOutput){
-                graf.add([indexRadky, indexZnaku], hranyNahoru[indexZnaku].prevItem, hranyNahoru[indexZnaku].numDots, 'directed');
-            }
-            //hrana odsud dolu (do dolniho zastaveni)
-			hranyDolu[indexZnaku].addHranaOdsud([indexRadky, indexZnaku]);
-        }
-        if(['|', 'a'].includes(znak)){
-            //prida orientovanou hranu z nejvic leveho volneho znaku do naseho znaku |
-            // JavaScript code
-            hranyDoleva.peekO([indexRadky, indexZnaku]);
-            if (hranyDoleva.readyToOutput) {
-                graf.add([indexRadky, indexZnaku], hranyDoleva.prevItem, hranyDoleva.numDots, 'directed');
             }
 
-            hranyDoprava.addHranaOdsud([indexRadky, indexZnaku]);
-
-            // vertical handling
-            hranyNahoru[indexZnaku].pushO([indexRadky, indexZnaku]);
-            if (hranyNahoru[indexZnaku].readyToOutput) {
-                graf.add(hranyNahoru[indexZnaku].prevItem, [indexRadky, indexZnaku], hranyNahoru[indexZnaku].numDots, 'undirected');
-            }
-
-            // from - to |
-            // ...-#...
-            // ....|...
-            // ...|....
-            // ...#....
-            hranyDolu[indexZnaku].getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
-                graf.add(...hrana);
-                hranyDolu[indexZnaku].reset();
-            });
-        }else if(znak == '#'){ //pres krizky cesta z o do o nikdy nevede
-            hranyDoleva.reset();
-            hranyNahoru[indexZnaku].reset();
-            hranyNahoru[indexZnaku].reset();
-            hranyDoprava.reset();
-        }
-
+        });
     });
-});
 
-// console.log(JSON.stringify(graf.graf, null, 2));
+    //https://stackoverflow.com/questions/6937863/json-stringify-so-that-arrays-are-on-one-line
+    console.log(JSON.stringify(graf.graf,function(k,v){
+        if(v instanceof Array)
+        return JSON.stringify(v);
+        return v;
+    },2));
 
-//https://stackoverflow.com/questions/6937863/json-stringify-so-that-arrays-are-on-one-line
-console.log(JSON.stringify(graf.graf,function(k,v){
-    if(v instanceof Array)
-       return JSON.stringify(v);
-    return v;
- },2));
+    return graf.graf;
+}
 
-// function mazeTextToGraph(text){
-//     maze = text;
-// }
-console.log("y")
+
+let m = `
+#..
+.#.
+...
+...`;
+
+mazeTextToGraph(m);
+
+console.log("y");
