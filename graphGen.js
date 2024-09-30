@@ -1,31 +1,3 @@
-class Queue {
-    constructor() {
-      this.elements = {};
-      this.head = 0;
-      this.tail = 0;
-    }
-    put(element) { //enqueue
-      this.elements[this.tail] = element;
-      this.tail++;
-    }
-    get() { //dequeue
-      const item = this.elements[this.head];
-      delete this.elements[this.head];
-      this.head++;
-      return item;
-    }
-    peek() {
-      return this.elements[this.head];
-    }
-    get length() {
-      return this.tail - this.head;
-    }
-    get empty() { //isEmpty
-      return this.length === 0;
-    }
-  }
-
-
 function markOkolniPole(row_zastaveni, column_zastaveni, maze, pocet_rows, pocet_columns) {
     // Assuming maze is a global variable
     let mozna_policka = [
