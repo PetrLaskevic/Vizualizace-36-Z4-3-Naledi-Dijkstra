@@ -430,23 +430,18 @@ function mazeTextToGraph(maze){
         });
     });
 
-    //https://stackoverflow.com/questions/6937863/json-stringify-so-that-arrays-are-on-one-line
-    console.log(JSON.stringify(graf.graf,function(k,v){
-        if(v instanceof Array)
-        return JSON.stringify(v);
-        return v;
-    },2));
-
     return graf.graf;
 }
 
+function prettyPrintGraf(graf){
+        /*Accepts a Graf.graf object*/
 
-let m = `
-#..
-.#.
-...
-...`;
+        //https://stackoverflow.com/questions/6937863/json-stringify-so-that-arrays-are-on-one-line
+        console.log(JSON.stringify(graf,function(k,v){
+            if(v instanceof Array)
+            return JSON.stringify(v);
+            return v;
+        },2));
+}
 
-mazeTextToGraph(m);
-
-console.log("y");
+export {mazeTextToGraph, prettyPrintGraf};
