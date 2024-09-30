@@ -97,11 +97,9 @@ function markEdgeStartsAndEnds(maze){
     });
 
     //Mark the surrounding squares (políčka) of '#' with the '-', '|', 'a' characters
-    maze.forEach((radka, indexRadky) => {
-        console.log(indexRadky);
+    maze.forEach((radka, indexRadky) => {;
         radka.forEach((znak, indexZnaku) => {
             if (znak === '#') {
-                console.log("pos", indexRadky, indexZnaku);
                 markOkolniPole(indexRadky, indexZnaku, maze, maze.length, maze[0].length);
             }
         });
@@ -350,7 +348,6 @@ function mazeTextToGraph(maze){
     let hranyNahoru = [];
     let hranyDolu = [];
     for (let x = 0; x < maze[0].length; x++){
-        console.log("yeah")
         hranyNahoru.push(new TwoItems("vertical"));
         hranyDolu.push(new HranyDoprava("vertical"));
     }
