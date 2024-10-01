@@ -315,6 +315,7 @@ class HranyDoprava {
     }
 }
 function mazeTextToGraph(maze){
+    maze = maze.substring(maze.indexOf('\n') + 1); //+1 to not include the first \n character //first line are dimensions of maze. not needed here
     maze = markEdgeStartsAndEnds(maze);
     let graf = new Graf();
     let hranyNahoru = [];
@@ -406,6 +407,7 @@ function prettyPrintGraf(graf){
         /*Accepts a Graf.graf object*/
 
         //https://stackoverflow.com/questions/6937863/json-stringify-so-that-arrays-are-on-one-line
+        console.log("Number of items in graph:", Object.keys(graf).length);
         console.log(JSON.stringify(graf,function(k,v){
             if(v instanceof Array)
             return JSON.stringify(v);
