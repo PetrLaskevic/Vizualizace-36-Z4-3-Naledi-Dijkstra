@@ -20,6 +20,14 @@ function markOkolniPole(row_zastaveni, column_zastaveni, maze, pocet_rows, pocet
     });
 }
 
+function lineEnding(source) {
+	var temp = source.indexOf('\n');
+	if (source[temp - 1] === '\r')
+		return "\r\n" //CRLF, Windows
+	return "\n" //LF, Linux
+}
+
+
 function markEdgeStartsAndEnds(maze){
     /*Marks nodes int the text maze where edges start and end, right before an obstacle ('#') or an edge of the map (where the person stops on the icy pavement).
     It replaces '.' characters with one of three possible characters:
@@ -32,23 +40,25 @@ function markEdgeStartsAndEnds(maze){
 
     // Convert the maze string into a 2D array
     // in maze[x][y], x is the line number, y is the column number
-    maze = maze.trim().split('\n').map(row => row.split(''));
-
+    maze = maze.trim().split(lineEnding(maze)).map(row => row.split(''));
+    if(!maze.map(i => i.length).every((val,i, arr) => val == arr[0])){
+        throw Error("Make sure all maze lines are the same length.");
+    }
     // Setting corners to 'a'
     // as corners are both horizontally and vertically next to the edge of the map
-    if (maze[0][0] !== '#') {
+    if (maze[0][0] == '.') { //!['#', 'S', 'C'].includes(maze[0][0])
         maze[0][0] = 'a';
     }
 
-    if (maze[0][maze[0].length - 1] !== '#') {
+    if (maze[0][maze[0].length - 1] == '.') {
         maze[0][maze[0].length - 1] = 'a';
     }
 
-    if (maze[maze.length - 1][0] !== '#') {
+    if (maze[maze.length - 1][0] == '.') {
         maze[maze.length - 1][0] = 'a';
     }
 
-    if (maze[maze.length - 1][maze[0].length - 1] !== '#') {
+    if (maze[maze.length - 1][maze[0].length - 1] == '.') {
         maze[maze.length - 1][maze[0].length - 1] = 'a';
     }
 
@@ -90,6 +100,8 @@ function markEdgeStartsAndEnds(maze){
 class Graf {
     constructor() {
         this.graf = {};
+        this.startCoordinates = [];
+        this.endCoordinates = [];
     }
 
     add(coordsFrom, coordsTo, weight, orientation) {
@@ -244,13 +256,13 @@ class HranyDoprava {
 	
 	**Line mode:**
 	
-	Computes distances from all '|' on the top and bottom sides of '#' on the line \n
-	to '-' on the left of the next '#' or to the right end of line and generates the respective edges.
+	Computes distances from '|' nodes on the top and bottom sides of '#' on the line \n
+	to a '-' node on the left of the next '#' or to the right end of line and generates the respective edges.
 
 	**Column mode:**
 
-	Computes distances from '-' on the left and right sides of all '#' on the line \n
-	to '|' on the top side of next '#' or to the bottom bottom end of column and generates the respective edges.
+	Computes distances from '-' nodes on the left and right sides of '#' on the line \n
+	to a '|' node on the top side of next '#' or to the bottom end of column and generates the respective edges.
 
 	Examples:
 
@@ -282,7 +294,8 @@ class HranyDoprava {
 
     // (holt proste misto ready to output je cast pridavani grafu tady)
     constructor(mode) {
-        this.lis = [];
+        this.lis = [];  //for "normal" nodes from a left '-' character to a to the right stop
+        this.lis2 = []; //for nodes discovered on the right or on the bottom to the 'C' (depends on mode), which are oppositely oriented (opačně orientované) to the nodes generated from this.lis
         this.mode = mode;
         this.setInitialValue = false;
     }
@@ -291,6 +304,13 @@ class HranyDoprava {
         // Add edge from this node (edge going to node specified when calling getEdgeData)
         this.setInitialValue = true;
         this.lis.push(coordinates);
+    }
+
+    addHranaSem(coordinates){
+        //Add edge to this node (to a node which will be discovered later)
+        //For the 'C' (end) node  => to make directed edges from the node discovered on the right to the 'C'
+        this.setInitialValue = true;
+        this.lis2.push(coordinates);
     }
 
     getEdgeData(stopNode) {
@@ -307,6 +327,16 @@ class HranyDoprava {
             }
             returnList.push([[x, y], [stopX, stopY], numDots, 'directed']);
         }
+        //same for lis2, for edges going to 'C':
+        for (const [x, y] of this.lis2) {
+            let numDots = 0;
+            if (this.mode === "horizontal") {
+                numDots = stopY - y + 1;
+            } else if (this.mode === "vertical") {
+                numDots = stopX - x + 1;
+            }
+            returnList.push([[stopX, stopY], [x, y], numDots, 'directed']);
+        }
         return returnList;
     }
 
@@ -315,8 +345,12 @@ class HranyDoprava {
     }
 }
 function mazeTextToGraph(maze){
+    console.log(maze)
+    //accepts text as a maze, returns a Graf instance
     maze = maze.substring(maze.indexOf('\n') + 1); //+1 to not include the first \n character //first line are dimensions of maze. not needed here
+    console.log(maze)
     maze = markEdgeStartsAndEnds(maze);
+    console.table(maze)
     let graf = new Graf();
     let hranyNahoru = [];
     let hranyDolu = [];
@@ -330,7 +364,7 @@ function mazeTextToGraph(maze){
         let hranyDoprava = new HranyDoprava("horizontal");
 
         radka.forEach((znak, indexZnaku) => {
-            if(znak != '#'){
+            if(znak !== '#'){ //(podle mě toto ne: !['#', 'S', 'C'].includes(znak), protože na startu se může inicializovat)
                 //initialize all 4 directions of edges
                 if(!hranyDoleva.setInitialValue){
                     hranyDoleva.pushO([indexRadky, indexZnaku]);
@@ -344,6 +378,76 @@ function mazeTextToGraph(maze){
                 if(!hranyDolu[indexZnaku].setInitialValue){
                     hranyDolu[indexZnaku].addHranaOdsud([indexRadky, indexZnaku]);
                 }
+            }
+            if(znak == 'S'){
+                graf.startCoordinates = [indexRadky, indexZnaku];
+
+                //directed edge from S to right
+                hranyDoprava.addHranaOdsud([indexRadky, indexZnaku]);
+
+                //directed edge from S to left
+                hranyDoleva.peekO([indexRadky, indexZnaku]);
+                if (hranyDoleva.readyToOutput) {
+                    graf.add([indexRadky, indexZnaku], hranyDoleva.prevItem, hranyDoleva.numDots, 'directed');
+                }
+
+                //directed edge from S to up
+                hranyNahoru[indexZnaku].peekO([indexRadky, indexZnaku]);
+                if(hranyNahoru[indexZnaku].readyToOutput){
+                    graf.add([indexRadky, indexZnaku], hranyNahoru[indexZnaku].prevItem, hranyNahoru[indexZnaku].numDots, 'directed');
+                }
+                //directed edge from S to down
+                //hrana odsud dolu (do dolniho zastaveni)
+                hranyDolu[indexZnaku].addHranaOdsud([indexRadky, indexZnaku]);
+
+            }else if(znak == 'C'){
+                graf.endCoordinates = [indexRadky, indexZnaku];
+
+                //directed edge from right to C
+                hranyDoprava.addHranaSem([indexRadky, indexZnaku]);
+                //directed edge from left to C
+                hranyDoleva.peekO([indexRadky, indexZnaku]);
+                if (hranyDoleva.readyToOutput) {
+                    graf.add(hranyDoleva.prevItem,[indexRadky, indexZnaku], hranyDoleva.numDots, 'directed');
+                }
+                //directed edge from top to C
+                hranyNahoru[indexZnaku].peekO([indexRadky, indexZnaku]);
+                if(hranyNahoru[indexZnaku].readyToOutput){
+                    graf.add(hranyNahoru[indexZnaku].prevItem, [indexRadky, indexZnaku],  hranyNahoru[indexZnaku].numDots, 'directed');
+                }
+                //directed edge from bottom to C
+                //vypada to, ze na to je treba pridat do HranyDoprava addHranaSem
+                //=> stejne jako na directed edge from right to C
+                    //(addHrana odsud by pridalo hranu s opacnou orientaci)
+                    //ohnout hranyNahoru taky nejde, protoze ta vec vyzaduje, aby se nejdriv zavolalo addHranaOdsud a az pak harvest
+                        //=> a my chceme jet jednou odshora nahoru => (A ZEJO addHranaOdsud se musi zavolat na to dolni policko, co objevime potom, a harvest na tohle 'C')
+                //=> TLDR: potreba pridat novou funkci
+                //nebo HOLT pridat 'undirected' hranu do cile (i z cile)
+                //=> s tim, ze kdyz se dorazi do cile, tak se program ukonci
+                //jinak bud muzu pridat do hranyDoprava tridy => a pridat addHranaSem a this.lis2 na tu hranu,
+                //a nebo (imho asi lepsi = udelat na to dalsi tridu)
+                // => to ale znamena ve vsech dalsich mistech ji dalsi tridu trackovat => lepsi to pridat do hranyDoprava
+                //(NO UNDIRECTED EDGES)
+                hranyDolu[indexZnaku].addHranaSem([indexRadky, indexZnaku]);
+
+
+
+                hranyDoprava.getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
+                    graf.add(...hrana);
+                    //pridani resetu sem pr na uk.txt udela z "2,1" hranu do [2,2],2], ale uz ne do [[2,4],4], (predtim oboji)
+                    // => nekonzistentni s jinymi smery (pr nahoru, nebo doleva kde jsou obe hrany)
+                    //pr doleva: "2,4": "[[[2,0],5],[[2,2],3],[[0,4],3],[[4,4],3]]", (ze to je krome [[2,2],3] i [[2,0],5])
+                    //pr nahoru: "5,2": "[[[5,1],2],[[0,2],6],[[2,2],4],[[5,3],2]]", (ze to je krome [[2,2],4] i [[0,2],6])
+                    hranyDoprava.reset();
+                });
+
+                hranyDolu[indexZnaku].getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
+                    graf.add(...hrana);
+                    //pridani resetu sem pr na uk.txt udela z "1,2": hranu do [2,2],2], ale uz ne do [5,2],5] (predtim oboji)
+                    // => nekonzistentni s jinymi smery (pr nahoru, kde jsou obe hrany)
+                    hranyDolu[indexZnaku].reset();
+                });
+
             }
             if(['-', 'a'].includes(znak)){
                 hranyDoleva.pushO([indexRadky, indexZnaku]);
@@ -400,14 +504,24 @@ function mazeTextToGraph(maze){
         });
     });
 
-    return graf.graf;
+
+    //test no nodes are #
+    Object.keys(graf.graf).forEach(function(key,index) {
+        const [x,y] = key.split(",").map(x => parseInt(x));
+        if(maze[x][y] == '#'){
+            alert("Graph parsing error",x,y);
+        }
+    });
+
+
+    return graf;
 }
 
 function prettyPrintGraf(graf){
-        /*Accepts a Graf.graf object*/
+        /*Accepts a Graf object*/
 
         //https://stackoverflow.com/questions/6937863/json-stringify-so-that-arrays-are-on-one-line
-        console.log("Number of items in graph:", Object.keys(graf).length);
+        console.log("Number of items in graph:", Object.keys(graf.graf).length, "start:", graf.startCoordinates, "end:", graf.endCoordinates);
         console.log(JSON.stringify(graf,function(k,v){
             if(v instanceof Array)
             return JSON.stringify(v);
