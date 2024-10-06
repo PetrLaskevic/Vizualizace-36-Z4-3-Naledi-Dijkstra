@@ -448,6 +448,10 @@ function mazeTextToGraph(maze){
                     hranyDolu[indexZnaku].reset();
                 });
 
+                //so far, 'C' is inside many edges as the target, but there isn't a node for 'C',
+                //so add a node for 'C':            //could be any number
+                graf.add([indexRadky, indexZnaku], [], Infinity, 'directed');
+
             }
             if(['-', 'a'].includes(znak)){
                 hranyDoleva.pushO([indexRadky, indexZnaku]);
