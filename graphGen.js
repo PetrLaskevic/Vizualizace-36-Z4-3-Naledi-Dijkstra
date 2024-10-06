@@ -404,6 +404,22 @@ function mazeTextToGraph(maze){
             }else if(znak == 'C'){
                 graf.endCoordinates = [indexRadky, indexZnaku];
 
+                hranyDoprava.getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
+                    graf.add(...hrana);
+                    //pridani resetu sem pr na uk.txt udela z "2,1" hranu do [2,2],2], ale uz ne do [[2,4],4], (predtim oboji)
+                    // => nekonzistentni s jinymi smery (pr nahoru, nebo doleva kde jsou obe hrany)
+                    //pr doleva: "2,4": "[[[2,0],5],[[2,2],3],[[0,4],3],[[4,4],3]]", (ze to je krome [[2,2],3] i [[2,0],5])
+                    //pr nahoru: "5,2": "[[[5,1],2],[[0,2],6],[[2,2],4],[[5,3],2]]", (ze to je krome [[2,2],4] i [[0,2],6])
+                    hranyDoprava.reset();
+                });
+
+                hranyDolu[indexZnaku].getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
+                    graf.add(...hrana);
+                    //pridani resetu sem pr na uk.txt udela z "1,2": hranu do [2,2],2], ale uz ne do [5,2],5] (predtim oboji)
+                    // => nekonzistentni s jinymi smery (pr nahoru, kde jsou obe hrany)
+                    hranyDolu[indexZnaku].reset();
+                });
+
                 //directed edge from right to C
                 hranyDoprava.addHranaSem([indexRadky, indexZnaku]);
                 //directed edge from left to C
@@ -430,24 +446,6 @@ function mazeTextToGraph(maze){
                 // => to ale znamena ve vsech dalsich mistech ji dalsi tridu trackovat => lepsi to pridat do hranyDoprava
                 //(NO UNDIRECTED EDGES)
                 hranyDolu[indexZnaku].addHranaSem([indexRadky, indexZnaku]);
-
-
-
-                hranyDoprava.getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
-                    graf.add(...hrana);
-                    //pridani resetu sem pr na uk.txt udela z "2,1" hranu do [2,2],2], ale uz ne do [[2,4],4], (predtim oboji)
-                    // => nekonzistentni s jinymi smery (pr nahoru, nebo doleva kde jsou obe hrany)
-                    //pr doleva: "2,4": "[[[2,0],5],[[2,2],3],[[0,4],3],[[4,4],3]]", (ze to je krome [[2,2],3] i [[2,0],5])
-                    //pr nahoru: "5,2": "[[[5,1],2],[[0,2],6],[[2,2],4],[[5,3],2]]", (ze to je krome [[2,2],4] i [[0,2],6])
-                    hranyDoprava.reset();
-                });
-
-                hranyDolu[indexZnaku].getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
-                    graf.add(...hrana);
-                    //pridani resetu sem pr na uk.txt udela z "1,2": hranu do [2,2],2], ale uz ne do [5,2],5] (predtim oboji)
-                    // => nekonzistentni s jinymi smery (pr nahoru, kde jsou obe hrany)
-                    hranyDolu[indexZnaku].reset();
-                });
 
                 //so far, 'C' is inside many edges as the target, but there isn't a node for 'C',
                 //so add a node for 'C':            //could be any number
