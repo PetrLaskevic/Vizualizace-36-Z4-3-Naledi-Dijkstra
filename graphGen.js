@@ -342,6 +342,7 @@ class HranyDoprava {
 
     reset() {
         this.lis = [];
+        this.lis2 = [];
     }
 }
 function mazeTextToGraph(maze){
