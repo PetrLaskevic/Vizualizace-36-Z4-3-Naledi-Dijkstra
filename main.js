@@ -1,5 +1,5 @@
 import {mazeTextToGraph, prettyPrintGraf} from "./graphGen.js";
-
+import {DijkstraMazeApp} from "./render.js";
 
 function whichLineEnding(source) {
 	var temp = source.indexOf('\n');
@@ -9,6 +9,9 @@ function whichLineEnding(source) {
 }
 
 let mazePicker = document.getElementById("mazePicker");
+let mazeAppClassHolderVariable; //the instance of the maze app
+let zasobnik;
+
 mazePicker.addEventListener("change", function(e){
 	let mazeSelected = mazePicker.value;
 	if(mazeSelected != ""){
@@ -37,17 +40,27 @@ mazePicker.addEventListener("change", function(e){
 		.then( r => r.text() )
    		.then( t => {
 
-			// let text = "";
-			// let lineEnding = whichLineEnding(t);
-			// if(lineEnding == "CRLF"){
-			// 	text = t.split("\r\n");
-			// }else if(lineEnding == "LF"){
-			// 	text = t.split("\n");
-			// }
+			let text = "";
+			let lineEnding = whichLineEnding(t);
+			if(lineEnding == "CRLF"){
+				text = t.split("\r\n");
+			}else if(lineEnding == "LF"){
+				text = t.split("\n");
+			}
 
 			let graf = mazeTextToGraph(t);
 			prettyPrintGraf(graf);
 
+			//jenom pro test, mazeApp se bude hodne menit
+			if(mazeAppClassHolderVariable != undefined){
+				mazeAppClassHolderVariable.zcelaHotovo = true;
+				mazeAppClassHolderVariable.hideMaze();
+			   }
+			mazeAppClassHolderVariable = new DijkstraMazeApp(graf);
+			mazeAppClassHolderVariable.renderMaze(text);
+			mazeAppClassHolderVariable.startDijkstra(); //entry point to our actual program
+
+			
 		});
 	}
 });
@@ -68,13 +81,14 @@ document.getElementById('inputfile').addEventListener('change', function(event) 
 		let graf = mazeTextToGraph(fr.result);
 		prettyPrintGraf(graf);
 
-        // if(mazeAppClassHolderVariable != undefined){
-		// 	mazeAppClassHolderVariable.zcelaHotovo = true;
-		// 	mazeAppClassHolderVariable.hideMaze();
-	   	// }
-		// mazeAppClassHolderVariable = new BFSMazeApp();
-		// mazeAppClassHolderVariable.renderMaze(text);
-        // mazeAppClassHolderVariable.startBFS(); //entry point to our actual program
+		//jenom pro test, mazeApp se bude hodne menit
+        if(mazeAppClassHolderVariable != undefined){
+			mazeAppClassHolderVariable.zcelaHotovo = true;
+			mazeAppClassHolderVariable.hideMaze();
+	   	}
+		mazeAppClassHolderVariable = new BFSMazeApp();
+		mazeAppClassHolderVariable.renderMaze(text);
+        mazeAppClassHolderVariable.startBFS(); //entry point to our actual program
     }
     fr.readAsText(this.files[0]);
     document.getElementById("selectedFileLabel").textContent = this.files[0].name;
@@ -85,10 +99,10 @@ document.getElementById('inputfile').addEventListener('change', function(event) 
 function wait(ms) {
 	if(ms > 0){
 		return new Promise((resolve, reject) => {
-	    setTimeout(() => {
-	      resolve(ms)
-	    }, ms )
-	  })
+			setTimeout(() => {
+				resolve(ms)
+			}, ms )
+		})
 	}else{
 		return;
 	}
