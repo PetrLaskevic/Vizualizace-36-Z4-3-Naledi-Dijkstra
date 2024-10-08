@@ -471,6 +471,13 @@ function mazeTextToGraph(maze){
                 }
                 //hrana odsud dolu (do dolniho zastaveni)
                 hranyDolu[indexZnaku].addHranaOdsud([indexRadky, indexZnaku]);
+
+                //TODO: Chtelo by to check tady na hranyDolu.addHranaSem (=hrana zaregistrovana v cili)
+                // => protoze odsud [6,4] nahoru do cile by slo uplně v pohode dojet
+                //=> MOZNA PROTO BYCH MEL PRENDAT addHranaSem DO HRAN NAHORU
+                // (ONO TAKY DUVOD (spis btw, ale taky pravda), ZE hrany nahoru do 'C' mohou byt z vice poli)
+                // => konkretne z vice '-' nahoru, (ale samozrejme jenom z jednoho '|' nahoru => protoze pod tim je krizek)
+                //(hadam, ze nejaky podobny bug bude symetricky i u hranyDoprava (kde taky addHranaSem))
             }
             if(['|', 'a'].includes(znak)){
                 //prida orientovanou hranu z nejvic leveho volneho znaku do naseho znaku |
@@ -500,7 +507,7 @@ function mazeTextToGraph(maze){
             }else if(znak == '#'){ //pres krizky cesta z o do o nikdy nevede
                 hranyDoleva.reset();
                 hranyNahoru[indexZnaku].reset();
-                hranyNahoru[indexZnaku].reset();
+                hranyDolu[indexZnaku].reset();
                 hranyDoprava.reset();
             }
 
