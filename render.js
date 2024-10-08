@@ -316,11 +316,14 @@ class DijkstraMazeApp{
 		this.handleTabletChange(mediaQuery);
 	}
 	renderMaze(text){
+		
 		this.createMaze();
 		//odebrani prazdneho radku na konci
 	    if(text[text.length - 1].trim() == ""){
 	    	text.pop();
 	    }
+
+		this.dbgMazeText = text.slice(1).map(row => row.split('')); //for debugging dbgMazeText console.table(this.dbgMazeText)
 		console.log(text);
 
 	    [this.pocetRows,this.pocetColumns] = text[0].split(' ').map(Number);
@@ -393,6 +396,10 @@ class DijkstraMazeApp{
 				if(this.maze[x][y] == '#' || this.maze[x][y] == 'C'){
 					break;
 				}
+				//tohle nejak nefunguje
+				// this.addTextToCell([x,y], this.n);
+				// this.n -= 1;
+				//this looks nice
 				this.addClassToCell([x,y], "cesta");
 				this.addClassToCell([x,y], direction);
 				// this.addClassToCell([x,y], `cesta ${direction}`);
@@ -419,15 +426,29 @@ class DijkstraMazeApp{
 			}
 			throw new Error(`Invalid parameters ${fromX}, ${fromY}, ${x}, ${y}`);
 		}
+		addTextToCell(coordinates, text){
+			let row, column;
+			[row, column] = coordinates;
+			try{
+				this.graphicalMaze.rows[row].cells[column].textContent += text + ',';
+			}catch(TypeError){
+				console.warn("TypeError caught", "row", row, "column", column);
+			}
+		}
 		vypisCestu(x,y){
 			let pole = [x,y];
 			let sled = [];
 			let x1,y1;
+			let counterOdKonce = 0;
+			this.n = this.delkaCesty;
 			while(String(pole) != String(this.startCoordinates)){
 				[x1,y1] = this.zJakehoPoleJsmeSemPrisli[pole];
 				let smer = this.urciSmer(x1, y1, pole[0], pole[1]);
-				// this.obarviPolePoCeste(x1, y1, smer);
+				this.obarviPolePoCeste(x1, y1, smer);
 				pole = [x1,y1];
+				this.addClassToCell([x1,y1], "prev");
+				// this.addTextToCell([x1, y1], counterOdKonce);
+				counterOdKonce += 1;
 				if(smer != 'NO'){
 					sled.push(smer);
 				}else{
@@ -528,13 +549,17 @@ class DijkstraMazeApp{
 					// exploredNodes.add(String([x,y]));
 					//this.distances build up is essentially dynamic programming
 					if(this.distances[[fromX, fromY]] + weight < this.distances[[x,y]]){
-						this.distances[[x,y]] = this.distances[[fromX, fromY]] + weight;
+						//the lengths of edges include the nodes they're between, so these nodes get counted two times each (except the start and end node)
+						//these differences on each two adjacent edges accumulate, so the final result is inflated
+						// => count each of them precisely once
+						this.distances[[x,y]] = this.distances[[fromX, fromY]] + weight - 1;
 						this.zJakehoPoleJsmeSemPrisli[[x,y]] = [fromX, fromY];
 						this.fronta.push([[x,y], this.distances[[x,y]]]);
 					}
 				}
 			}
 			console.log(this.distances[this.endCoordinates]);
+			this.delkaCesty = this.distances[this.endCoordinates];
 			console.log(this.distances);
 			this.vypisCestu(...this.endCoordinates);
 		}
