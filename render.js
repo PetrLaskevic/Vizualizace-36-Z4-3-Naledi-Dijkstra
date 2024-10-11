@@ -391,7 +391,7 @@ class DijkstraMazeApp{
 			}
 		}
 		obarviPolePoCeste(x,y,direction){
-			let lastBeforeWall = this.computeEndField(x,y,direction);
+			let lastBeforeWall = this.computeEndField(x,y,direction); //really is the first value out of the bounds of the map in that direction => should be named border
 			while(String([x,y]) != String(lastBeforeWall)){
 				if(this.maze[x][y] == '#' || this.maze[x][y] == 'C'){
 					break;
@@ -413,6 +413,7 @@ class DijkstraMazeApp{
 					y -= 1;
 				}
 			}
+			return lastBeforeWall; //is this returned value used?
 		}
 		urciSmer(fromX, fromY, x, y){
 			if(x > fromX){
@@ -435,14 +436,105 @@ class DijkstraMazeApp{
 				console.warn("TypeError caught", "row", row, "column", column);
 			}
 		}
+		//TODO: TO VYPSANI GRAFICKY VYPADA OK:
+		//TED UZ JEN ZKONTROLOVAT JESTLI SEDI DELKA CESTY S this.delkaCesty
+		//PAK SE Podivat na ty GraphGen bugy kolem 'C'
+		// => a tim bychom meli mit MVP
+		//Pak uz jde tu vizalizaci vylepsovat, ze se bude ukazovat neco z prubehu
+		//pr considered policka apod
+		//pak tam jde treba doplnovat ty vzdalenosti (cislicka) primo do mapy
+		//aby slo videt, jak se updatujou
+		// pr. add a table of this.distances as it changes
+		async blikPolePoCeste(x,y,direction, edgeWeight){
+			let border = this.computeEndField(x,y,direction);
+			let lastValueInBounds = [x,y];
+			const maxTimePerEdge = 2000;
+			//TODO: add nejake takove zrychleni na dlouhych nodes
+			const timePerNode = Math.min(maxTimePerEdge / edgeWeight, 225); //250
+			while(String([x,y]) != String(border)){
+				if(this.maze[x][y] == '#' ){ // || this.maze[x][y] == 'C'
+					break;
+				}
+				lastValueInBounds = [x,y]; //border returns a field out of map, similarly to a stop condition with < in for loop
+				
+				
+				this.addClassToCell([x,y], "selectedOnWalkThrough");
+				await wait(timePerNode); //await wait(250);
+				this.removeClassFromCell([x,y], "selectedOnWalkThrough");
+
+				//move this check here, so selectedOnWalkThrough gets applied to the 'C' node as well
+				if(this.maze[x][y] == 'C'){
+					break;
+				}
+
+
+				if (direction == 'D'){
+					x += 1;
+				} else if (direction == 'N'){
+					x -= 1;
+				} else if (direction == 'P'){
+					y += 1;
+				} else if (direction == 'L'){
+					y -= 1;
+				}
+			}
+			return lastValueInBounds	;
+		}
+		syncWait(n){
+			for(let x = 0; x < n; x++){
+				for(let x = 0; x < n; x++){
+					for(let x = 0; x < n; x++){
+						for(let x = 0; x < n; x++){
+							console.log(x);
+						}
+					}
+				}
+			}
+		}
+		async walkThroughCesta(cesta, delkyHranList){
+			let [x,y] = this.startCoordinates;
+			//longer delay for first letter
+			document.getElementById(0).classList.add("selectedLetter");
+			await wait(1000);
+			document.getElementById(0).classList.remove("selectedLetter");
+
+			//Instead of doing it one by one, it just fires off multiple asynchronous calls,
+			//Just use a modern for … of loop instead, in which await will work as expected
+			// cesta.forEach(async (move, index) => {
+			// 	document.getElementById(index).classList.add("selectedLetter");
+			// 	[x,y] = await this.blikPolePoCeste(x,y,move);
+			// 	document.getElementById(index).classList.remove("selectedLetter")
+			// });
+			//src: https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
+			//OK, then why is the JS version of enumerate 80% slower than a C style for loop? src : https://jsbench.me/6dkh13vqrr/1
+			for( const [index, move] of cesta.entries()){
+				//TODO: opravit, ze takhle kdyz zvolime jiny maze, dokud bezi vizualizace tohoto, tak muze byt zlute zvoleno vic pismenek
+				document.getElementById(index).classList.add("selectedLetter");
+				[x,y] = await this.blikPolePoCeste(x,y,move, delkyHranList[index]);
+				document.getElementById(index).classList.remove("selectedLetter");
+				//with async wait (no matter, how big or small, the yellow flashes on the corner (selectedOnWalkThrough gets removed and put back))
+				// await wait(2	);
+				//with sync wait, it does not flicker (it stays on on the cornern the whole time)
+					this.syncWait(10	);
+					this.syncWait(10	);
+					this.syncWait(10	);
+			}
+		}
+		getLen(x1,y1,x2,y2){
+			//all positive integers, only y xor x changes
+			//basically same as numDots in graphGen.js
+			return Math.abs(x1+y1 -x2-y2) + 1;
+		}
 		vypisCestu(x,y){
 			let pole = [x,y];
 			let sled = [];
 			let x1,y1;
 			let counterOdKonce = 0;
+			let delkyHranList = [];
 			this.n = this.delkaCesty;
 			while(String(pole) != String(this.startCoordinates)){
 				[x1,y1] = this.zJakehoPoleJsmeSemPrisli[pole];
+				delkyHranList.push(this.getLen(x1, y1, pole[0], pole[1]));
 				let smer = this.urciSmer(x1, y1, pole[0], pole[1]);
 				this.obarviPolePoCeste(x1, y1, smer);
 				pole = [x1,y1];
@@ -455,15 +547,19 @@ class DijkstraMazeApp{
 					console.log("skip, propojka");
 				}
 			}
-			let cesta = "";
+			let cesta = [];
 			let index = sled.length - 1;
 			while(index > -1){
-				cesta += sled[index];
+				cesta.push(sled[index]);
 				index -= 1;
 			}
-			
-			document.getElementById("presentResult").innerHTML = "<span class='pathText'>Path</span> from <span class='startText'>start</span> to end is " + cesta;
-			return cesta;
+			delkyHranList.reverse();
+			// ${this.delkaCesty} == pocet policke na ceste 
+			// ${cesta.length} == pocet ruznych hran na trase
+			let cestaHTMLString = cesta.map((val, i) => `<span id=${i}>${val}</span>`);
+			document.getElementById("presentResult").innerHTML = `<span class='pathText'>Path</span> from <span class='startText'>start</span> to end is ${cestaHTMLString.join('')}`;
+			this.walkThroughCesta(cesta, delkyHranList);
+			return [cesta, delkyHranList]; //takto se v JS returnuji 2 arrays, tento return pro console.log
 		}
 		async jetRovneDokudNeZed(x,y,direction){
 			let lastBeforeWall = this.computeEndField(x,y,direction);
@@ -559,9 +655,9 @@ class DijkstraMazeApp{
 				}
 			}
 			console.log(this.distances[this.endCoordinates]);
-			this.delkaCesty = this.distances[this.endCoordinates];
+			this.delkaCesty = this.distances[this.endCoordinates]; //delka cesty v polickach
 			console.log(this.distances);
-			this.vypisCestu(...this.endCoordinates);
+			console.log(this.vypisCestu(...this.endCoordinates));
 		}
 		addClassToCell(coordinates, className){
 			//coordinates are row : column
