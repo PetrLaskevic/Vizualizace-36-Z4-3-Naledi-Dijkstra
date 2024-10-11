@@ -5,10 +5,19 @@
   <title>36-Z4-3 Náledí</title>
     <meta name="viewport" content="width=device-width"> 
     <style type="text/css">
+        @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+        
+        .selectedOnWalkThrough{
+            filter: invert(1) contrast(0.8);
+            /* outline: 2px solid #026bbe; which after filter gives: #e4904d; */
+        }
+        .selectedLetter{
+            color: #e4904d; 
+        }
         .prev{
             background: cornflowerblue;
         }
-        @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+        
         .useFullWidthForMobile{
             width: 100%;
             border-spacing: 0 !important;
@@ -226,6 +235,8 @@
         }
         #presentResult{
             word-wrap: anywhere;
+            width: fit-content;
+            margin: auto;
         }
         
         @media only screen and (max-width: 800px) { /*777 40em*/
