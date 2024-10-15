@@ -86,9 +86,9 @@ document.getElementById('inputfile').addEventListener('change', function(event) 
 			mazeAppClassHolderVariable.zcelaHotovo = true;
 			mazeAppClassHolderVariable.hideMaze();
 	   	}
-		mazeAppClassHolderVariable = new BFSMazeApp();
+		mazeAppClassHolderVariable = new DijkstraMazeApp(graf);
 		mazeAppClassHolderVariable.renderMaze(text);
-        mazeAppClassHolderVariable.startBFS(); //entry point to our actual program
+        	mazeAppClassHolderVariable.startDijkstra(); //entry point to our actual program
     }
     fr.readAsText(this.files[0]);
     document.getElementById("selectedFileLabel").textContent = this.files[0].name;
