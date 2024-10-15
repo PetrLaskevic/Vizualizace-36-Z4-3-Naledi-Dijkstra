@@ -329,7 +329,6 @@ class HranyDoprava {
     }
 
     getEdgeData(stopNode) {
-        // alert("gucci")
         // stop node = character, kde se to zastavilo = - pred # nebo okraj
         // kazdopadne je vcetne
         const [stopX, stopY] = stopNode;
@@ -503,21 +502,24 @@ function mazeTextToGraph(maze){
                     hranyDoprava.reset();
                 });
 
-                //TBD
                 hranyDoprava.hranyDoCile.getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
                     graf.add(...hrana);
                     hranyDoprava.hranyDoCile.reset();
                 });
 
-				       //TODO: Chtelo by to check tady na hranyDolu.addHranaSem (=hrana zaregistrovana v cili)
-                // => protoze odsud [6,4] nahoru do cile by slo uplně v pohode dojet
-                //=> MOZNA PROTO BYCH MEL PRENDAT addHranaSem DO HRAN NAHORU
-                // (ONO TAKY DUVOD (spis btw, ale taky pravda), ZE hrany nahoru do 'C' mohou byt z vice poli)
-                // => konkretne z vice '-' nahoru, (ale samozrejme jenom z jednoho '|' nahoru => protoze pod tim je krizek)
-                //(hadam, ze nejaky podobny bug bude symetricky i u hranyDoprava (kde taky addHranaSem))
-                //MAYBE CHANGE TO HRANYnAHORU FOR BETTER SEMANTICS = pro vsechny dalsi v - a | to bude hrana nahoru
-                
-                hranyDolu[indexZnaku].hranyDoCile.addEdgeFromHere([indexRadky, indexZnaku]) //TBD
+                //previously TODO: A check here for hranyDolu.addHranaSem would be nice (=edge registered in 'C')
+                // => because it would be possible to go  from [6,4] upwards to 'C'  just fine
+                //=> MAYBE BECAUSE OF THIS, I SHOULD ADD addHranaSem TO EDGES GOING UP
+                // (ANOTHER REASON for such change (before last commit 3f869213f6c47f782dbb9cf86d4c262a1488887b) was, THAT edges directed up to 'C' could be made from more squares)
+                // => from more '-' characters up, (but of courese only from one '|' up => because below is is a '#')
+                //(A similar bug is there symetrically at hranyDoprava (where there is also addHranaSem))
+                //MAYBE CHANGE TO hranyNahoru FOR BETTER SEMANTICS = for all others '-' and '|' it will be an edge up
+                //=> Semantically, it would make sense: What from 'C' are hranyDoprava.hranyDoCile ,                 (spis by se mohlo jmenovat hranyZprava.hranyDocile)
+                //   are for other squares hranyDoleva.hranyDoCile (squares which are '|' to the right of 'C', because those to the left are handled by normal hranyDoleva )
+                //likewise with hranyDolu[indexZnaku].hranyDoCile, Down it is from 'C', the goal, but for all squares below 'C' in the same column they are hranyNahoru
+                //JUST SWAPPING hranyDoprava for hranyDoleva is not possible, because hranyDoprava is instanceof HranyDoprava, where I added hranyDoCile, but hranyDoleva is instanceof TwoItems, where I didn't add anything like this
+                //likewise with hranyDolu and hranyNahoru - they're different classes (and TwoItems really is for saving edges between # # on a line/column => really not for this)
+                hranyDolu[indexZnaku].hranyDoCile.addEdgeFromHere([indexRadky, indexZnaku]);
 				
                 //vertical handling
                 hranyNahoru[indexZnaku].peekO([indexRadky, indexZnaku]);
