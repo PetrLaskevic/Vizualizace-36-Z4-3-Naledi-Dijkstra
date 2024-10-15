@@ -485,7 +485,7 @@ class DijkstraMazeApp{
 				for(let x = 0; x < n; x++){
 					for(let x = 0; x < n; x++){
 						for(let x = 0; x < n; x++){
-							console.log(x);
+							x; //console.log(x);
 						}
 					}
 				}
