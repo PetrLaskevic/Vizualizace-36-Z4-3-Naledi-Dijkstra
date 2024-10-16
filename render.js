@@ -265,6 +265,7 @@ class DijkstraMazeApp{
 	}
 	hideMaze(){
 		this.graphicalMaze.hidden = true;
+		this.resultParagraph.hidden = true;
 		document.getElementById("funFact").classList.add("hiddenWithNoHeight");
 	}
 	createMaze(){
@@ -273,6 +274,10 @@ class DijkstraMazeApp{
 		table.appendChild(tbody);
 		document.getElementById("tableContainer").appendChild(table);
 		this.graphicalMaze = tbody;
+
+		this.resultParagraph = document.createElement("p");
+		this.resultParagraph.className = "presentResult";
+		document.getElementById("tableContainer").appendChild(this.resultParagraph);
 	}
 	handleTabletChange(e) {
 		// Check if the media query is true
@@ -365,15 +370,15 @@ class DijkstraMazeApp{
 	    console.log("this.endCoordinates", this.endCoordinates);
 	    console.log("this.startCoordinates", this.startCoordinates);
 	  }
-	  presentResult(){
-	  	let row = this.graphicalMaze.insertRow()
-	  	let holder = row.insertCell();
-	  	holder.colSpan = 77; //this.pocetColumns
-	  	holder.className = "presentResult";
-	  	holder.innerHTML = "<span class='pathText'>Path</span> length from <span class='startText'>start</span> to end is " + this.delkaCesty + " cells long";
+	//   presentResult(){
+	//   	let row = this.graphicalMaze.insertRow()
+	//   	let holder = row.insertCell();
+	//   	holder.colSpan = 77; //this.pocetColumns
+	//   	holder.className = "presentResult";
+	//   	holder.innerHTML = "<span class='pathText'>Path</span> length from <span class='startText'>start</span> to end is " + this.delkaCesty + " cells long";
 
-	  	document.getElementById("funFact").classList.remove("hiddenWithNoHeight");
-	  }
+	//   	document.getElementById("funFact").classList.remove("hiddenWithNoHeight");
+	//   }
 	  async startDijkstra(){ //async so I can use wait function
 			this.addClassToCell(this.startCoordinates, "start");
 			this.addClassToCell(this.endCoordinates, "end");
@@ -485,7 +490,8 @@ class DijkstraMazeApp{
 				for(let x = 0; x < n; x++){
 					for(let x = 0; x < n; x++){
 						for(let x = 0; x < n; x++){
-							x; //console.log(x);
+							// console.log(x);
+							x;
 						}
 					}
 				}
@@ -494,9 +500,9 @@ class DijkstraMazeApp{
 		async walkThroughCesta(cesta, delkyHranList){
 			let [x,y] = this.startCoordinates;
 			//longer delay for first letter
-			document.getElementById(0).classList.add("selectedLetter");
+			this.resultParagraph.querySelector("#c0").classList.add("selectedLetter");
 			await wait(1000);
-			document.getElementById(0).classList.remove("selectedLetter");
+			this.resultParagraph.querySelector("#c0").classList.remove("selectedLetter");
 
 			//Instead of doing it one by one, it just fires off multiple asynchronous calls,
 			//Just use a modern for … of loop instead, in which await will work as expected
@@ -509,9 +515,9 @@ class DijkstraMazeApp{
 			//OK, then why is the JS version of enumerate 80% slower than a C style for loop? src : https://jsbench.me/6dkh13vqrr/1
 			for( const [index, move] of cesta.entries()){
 				//TODO: opravit, ze takhle kdyz zvolime jiny maze, dokud bezi vizualizace tohoto, tak muze byt zlute zvoleno vic pismenek
-				document.getElementById(index).classList.add("selectedLetter");
+				this.resultParagraph.querySelector(`#c${index}`).classList.add("selectedLetter");
 				[x,y] = await this.blikPolePoCeste(x,y,move, delkyHranList[index]);
-				document.getElementById(index).classList.remove("selectedLetter");
+				this.resultParagraph.querySelector(`#c${index}`).classList.remove("selectedLetter");
 				//with async wait (no matter, how big or small, the yellow flashes on the corner (selectedOnWalkThrough gets removed and put back))
 				// await wait(2	);
 				//with sync wait, it does not flicker (it stays on on the cornern the whole time)
@@ -554,10 +560,10 @@ class DijkstraMazeApp{
 				index -= 1;
 			}
 			delkyHranList.reverse();
-			// ${this.delkaCesty} == pocet policke na ceste 
+			// ${this.delkaCesty} == pocet policek na ceste 
 			// ${cesta.length} == pocet ruznych hran na trase
-			let cestaHTMLString = cesta.map((val, i) => `<span id=${i}>${val}</span>`);
-			document.getElementById("presentResult").innerHTML = `<span class='pathText'>Path</span> from <span class='startText'>start</span> to end is ${cestaHTMLString.join('')}`;
+			let cestaHTMLString = cesta.map((val, i) => `<span id=c${i}>${val}</span>`); //changed id from 1 to c1 because ids which start with 1 are not very valid in CSS, lol: //https://stackoverflow.com/questions/20306204/using-queryselector-with-ids-that-are-numbers
+			this.resultParagraph.innerHTML = `<span class='pathText'>Path</span> from <span class='startText'>start</span> to <span class='endText'>end</span> is <span class='pathSequence'>${cestaHTMLString.join('')}</span>`;
 			this.walkThroughCesta(cesta, delkyHranList);
 			return [cesta, delkyHranList]; //takto se v JS returnuji 2 arrays, tento return pro console.log
 		}
