@@ -142,13 +142,13 @@
             background: #6acd67;
         }
         .end{
-            background: #0004ff !important;
+            background: #0022a5 !important;  /* maybe #00a56f;*/
         }
         .endText{
-            color: #2c71ed;
+            color: #0022a5;
         }
         .endCtverecek{
-            background: #2c71ed;
+            background: #0022a5;
         }
         .startText{
             color: #f85701;
@@ -164,7 +164,9 @@
           /* background-size: contain !important; */
         }
         .pathText{
-            color: #02bebe
+            /* color: #02bebe; */
+            color: #2c71ed;
+            font-weight: 600;
         }
         .L{
             transform: rotate(180deg);
@@ -233,7 +235,7 @@
             display: inline;
             font-size: 1.2rem;
         }
-        #presentResult{
+        .presentResult{
             word-wrap: anywhere;
             width: fit-content;
             margin: auto;
@@ -298,8 +300,17 @@
             .green{
                 background: #206e2f8c;
             }
-           .visited:not(.green, .start){
-            background: #c77e1fbf;
+            .end{
+            background: #00d38e !important;  /* #0022a5; for light theme = nicely legible in light theme, not so in dark theme, similarly to the green color in light theme,   or maybe #00a56f;*/
+            }
+            .endText{
+                color: #00d38e;
+            }
+            .endCtverecek{
+                background: #00d38e;
+            }
+            .visited:not(.green, .start){
+                background: #c77e1fbf;
             }
             .skipped:not(.green, .start){
                 background: #4eb54bc2; 
@@ -318,8 +329,9 @@
                 backdrop-filter: blur(5px);
             }
             .pathText{
-                color: cyan;
+                color: #008eff; /*#1b90ed*/
             }
+            
         }
         .start{
             background: #f85701 !important;
