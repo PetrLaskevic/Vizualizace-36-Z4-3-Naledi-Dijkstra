@@ -203,26 +203,6 @@ class priorityQueue {
 }
 
 
-
-
-class Stack{
-	constructor() {
-	  this.elements = [];
-	}
-	put(element) { //enqueue
-	  this.elements.push(element);
-	}
-	get() { //dequeue
-	  return this.elements.pop();
-	}
-	get length() {
-		return this.elements.length;
-	}
-	get empty() { //isEmpty
-	  return this.elements.length === 0;
-	}
-}
-
 //https://stackoverflow.com/a/53452241/11844784
 function wait(ms) {
 	if(ms > 0){
@@ -256,10 +236,6 @@ class DijkstraMazeApp{
 		Object.keys(graf.graf).forEach(key => {
 			this.distances[key] = Infinity;
 		});
-		//TLDR: added
-		//The end node is not in the graph, since no edges go from it...
-		// => maybe I should change it and add "2,2": [] as a node in a graph (to make other code more elegant)
-		// this.distances[this.endCoordinates] = Infinity;
 		//the MinQueue (Priority Queue) will be set in renderMaze as well, when the size upper bound is going to be known 
 		//(as it uses a static array, only allocates memory once)
 	}
@@ -370,15 +346,6 @@ class DijkstraMazeApp{
 	    console.log("this.endCoordinates", this.endCoordinates);
 	    console.log("this.startCoordinates", this.startCoordinates);
 	  }
-	//   presentResult(){
-	//   	let row = this.graphicalMaze.insertRow()
-	//   	let holder = row.insertCell();
-	//   	holder.colSpan = 77; //this.pocetColumns
-	//   	holder.className = "presentResult";
-	//   	holder.innerHTML = "<span class='pathText'>Path</span> length from <span class='startText'>start</span> to end is " + this.delkaCesty + " cells long";
-
-	//   	document.getElementById("funFact").classList.remove("hiddenWithNoHeight");
-	//   }
 	  async startDijkstra(){ //async so I can use wait function
 			this.addClassToCell(this.startCoordinates, "start");
 			this.addClassToCell(this.endCoordinates, "end");
@@ -441,10 +408,7 @@ class DijkstraMazeApp{
 				console.warn("TypeError caught", "row", row, "column", column);
 			}
 		}
-		//TODO: TO VYPSANI GRAFICKY VYPADA OK:
-		//TED UZ JEN ZKONTROLOVAT JESTLI SEDI DELKA CESTY S this.delkaCesty
-		//PAK SE Podivat na ty GraphGen bugy kolem 'C'
-		// => a tim bychom meli mit MVP
+		
 		//Pak uz jde tu vizalizaci vylepsovat, ze se bude ukazovat neco z prubehu
 		//pr considered policka apod
 		//pak tam jde treba doplnovat ty vzdalenosti (cislicka) primo do mapy
@@ -457,11 +421,10 @@ class DijkstraMazeApp{
 			//TODO: add nejake takove zrychleni na dlouhych nodes
 			const timePerNode = Math.min(maxTimePerEdge / edgeWeight, 225); //250
 			while(String([x,y]) != String(border)){
-				if(this.maze[x][y] == '#' ){ // || this.maze[x][y] == 'C'
+				if(this.maze[x][y] == '#' ){
 					break;
 				}
 				lastValueInBounds = [x,y]; //border returns a field out of map, similarly to a stop condition with < in for loop
-				
 				
 				this.addClassToCell([x,y], "selectedOnWalkThrough");
 				await wait(timePerNode); //await wait(250);
@@ -471,7 +434,6 @@ class DijkstraMazeApp{
 				if(this.maze[x][y] == 'C'){
 					break;
 				}
-
 
 				if (direction == 'D'){
 					x += 1;
@@ -504,15 +466,6 @@ class DijkstraMazeApp{
 			await wait(1000);
 			this.resultParagraph.querySelector("#c0").classList.remove("selectedLetter");
 
-			//Instead of doing it one by one, it just fires off multiple asynchronous calls,
-			//Just use a modern for … of loop instead, in which await will work as expected
-			// cesta.forEach(async (move, index) => {
-			// 	document.getElementById(index).classList.add("selectedLetter");
-			// 	[x,y] = await this.blikPolePoCeste(x,y,move);
-			// 	document.getElementById(index).classList.remove("selectedLetter")
-			// });
-			//src: https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
-			//OK, then why is the JS version of enumerate 80% slower than a C style for loop? src : https://jsbench.me/6dkh13vqrr/1
 			for( const [index, move] of cesta.entries()){
 				//TODO: opravit, ze takhle kdyz zvolime jiny maze, dokud bezi vizualizace tohoto, tak muze byt zlute zvoleno vic pismenek
 				this.resultParagraph.querySelector(`#c${index}`).classList.add("selectedLetter");
@@ -567,61 +520,7 @@ class DijkstraMazeApp{
 			this.walkThroughCesta(cesta, delkyHranList);
 			return [cesta, delkyHranList]; //takto se v JS returnuji 2 arrays, tento return pro console.log
 		}
-		async jetRovneDokudNeZed(x,y,direction){
-			let lastBeforeWall = this.computeEndField(x,y,direction);
-			console.log("lastBeforeWall",lastBeforeWall);
-			console.log("should be defined",x,y);
-			let zacatekLajnyX, zacatekLajnyY;
-			[zacatekLajnyX, zacatekLajnyY] = [x,y];
-			let previousField;
-			let stopLoopImmediatelyFlag = false;
-			//=>IN JS, that would compare memory locations, so I use String()
-			//performance OK, the arrays have 2 items each
-			while(String([x,y]) != String(lastBeforeWall)){
-				console.log("hello?!!")
-				this.addClassToCell([x,y], "considered");
-				await wait(parseInt(animationDelay.value));
-				this.removeClassFromCell([x,y], "considered");
-				if(this.cellHasClass([x,y], "visited")){
-					this.addClassToCell([x,y], "skipped");
-				}else{
-					this.addClassToCell([x,y], "visited");
-				}
-				if(this.maze[x][y] == '#'){
-					[x,y] = previousField;
-					break;
-				}else if(this.maze[x][y] == 'C'){
-					console.log('yo');
-						if(!(String([x,y]) in this.zJakehoPoleJsmeSemPrisli)){
-						if(String([x,y]) != String([zacatekLajnyX, zacatekLajnyY])){
-							this.zJakehoPoleJsmeSemPrisli[String([x,y])] = [zacatekLajnyX, zacatekLajnyY, direction];
-						}
-						}
-						console.log("nalezen cil")
-						console.log(this.vypisCestu(x,y));
-						stopLoopImmediatelyFlag = true;
-						this.zcelaHotovo = true;
-						break;
-				}
-				previousField = [x,y];
-				if (direction == 'D'){
-					x += 1;
-				} else if (direction == 'N'){
-					x -= 1;
-				} else if (direction == 'P'){
-					y += 1;
-				} else if (direction == 'L'){
-					y -= 1;
-				}
-			}
-			return previousField;
-			//takhle nema zadny efekt:
-			// if(stopLoopImmediatelyFlag){
-			// 	console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-			// 	return;
-			// }
-			
-		}
+		
 		async runDijkstra(){
 			// let x,y, direction;
 			let exploredNodes = new Set();
@@ -638,17 +537,12 @@ class DijkstraMazeApp{
 				//update distance, if newly discovered is smaller
 				for(const [[x,y], weight] of volnaOkolniPole){
 					//needed this check here?
-					//LOL: V TOM TUTORIALU JE TO BLBE 
-					//NIKOLI, BLBOST JSEM PROVEDL JA => NEMEL JSEM TAM DAT exploredNodes.add(String([x,y])); ZA TEN CHECK
-					//=> kdyz tady je ten check, A TEN ASSIGNMENT ZA TIM =  exploredNodes.add(String([x,y]));
-					//tak si oznacime jako videna vsechna pole, na ktera bychom se sli v dalsi iteraci podivat !!
-					
 					//abychom nenavrhovali jit tam, kde uz jsme byli, odkud jsme vysli
 					//myslim si, ze vysledek to neovlivni (kdyz ten check tady nebude), ale usetri to zbytecne opakovani hlavni smycky (kdy by se mnoho krat pridavala a odebirala pole, ktera uz jsme dokoncili)
 					if(exploredNodes.has(String([x,y]))){ //String needed, otherwise set compares by reference
 						continue;
 					}
-					// exploredNodes.add(String([x,y]));
+			
 					//this.distances build up is essentially dynamic programming
 					if(this.distances[[fromX, fromY]] + weight < this.distances[[x,y]]){
 						//the lengths of edges include the nodes they're between, so these nodes get counted two times each (except the start and end node)
