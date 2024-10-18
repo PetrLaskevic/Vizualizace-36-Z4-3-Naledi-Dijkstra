@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-  <title>36-Z4-3 Náledí</title>
+    <title>36-Z4-3 Náledí</title>
     <meta name="viewport" content="width=device-width"> 
     <style type="text/css">
         @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
@@ -195,7 +195,7 @@
             transform: rotate(90deg);
         }
         .P.L.N{
-            background-image: url("./ndp.png") !important;
+            background-image: url("http://192.168.0.141:8000/ndp.png") !important;
             transform: rotate(-90deg);
         }
         .L.P{
@@ -377,7 +377,7 @@
                 <label id="selectedFileLabel" style="font-family:Tahoma,sans-serif;padding-left: 4px;"></label>
               </div>
               <p id="visualisationDelayControls">Delay in ms:
-              <input type="number" min="0" style="width: 5rem" value="7" id="visualisationDelayPicker">
+              <input disabled type="number" min="0" style="width: 5rem" value="7" id="visualisationDelayPicker">
               </p>
             </div>
         </div>
@@ -387,14 +387,14 @@
                 <div class="green ctverecek"></div>
                 <b class="greenText popisek">wall</b>
             </div>
-            <div class="textHolder">
+            <!-- <div class="textHolder">
                 <div class="visited ctverecek"></div>
                 <b class="visitedText popisek">visited cell</b>
             </div>
             <div class="textHolder">
                  <div class="skipped ctverecek"></div>
                 <b class="skippedText popisek">2 times visited cell</b>
-            </div>
+            </div> -->
             <div class="textHolder">
                 <div class="start ctverecek"></div>
                 <b class="startText popisek">start</b>
@@ -403,10 +403,10 @@
                 <div class="endCtverecek ctverecek"></div>
                 <b class="endText popisek">end</b>
             </div>
-            <div class="textHolder">
+            <!-- <div class="textHolder">
                 <div class="considered ctverecek"></div>
                 <b style="color:#c92222" class="popisek">already visited cell, around which the neighbors are being searched <u>now</u></b>
-            </div>
+            </div> -->
           </div>
         </div>
     </div>
@@ -420,8 +420,8 @@
          <p class="paragraph">If you want to click on more cells, you can scan <a href="javascript:void(0);" id="resume">all remaining cells</a></p>
          </div>
      </div>
-     <span class="napis"><h2>Depth First Search (DFS)</h2> <p>is an algorithm which can be used for solving mazes.</p></span> 
-     <p class="paragraph"> It is <b>not</b> guaranteed to show the shortest path, it just shows <b>a</b> path. As you can see here, these paths are a lot longer than the paths calculated by BFS would be. In this task, the requirement was a path, not a shortest path, so this algorithm got full points</p>  <!-- That is not a mistake in implementation.</p> Obviously, for these mazes BFS or A* are a better choice -->
+     <span class="napis"><h2>Dijkstra's algorithm</h2> <p> can be used for solving mazes.</p></span> 
+     <p class="paragraph"> It is guaranteed to show the shortest path on a weighted graph with no negative edge weights.</p>
 
      <pre id="mapText"></pre>
      <div class="popup hidden" id="loadOnLocalServer">
