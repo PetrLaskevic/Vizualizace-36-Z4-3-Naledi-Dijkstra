@@ -434,6 +434,24 @@
             <button id="loadOnLocalServerOK" class="ok" onclick="document.getElementById('loadOnLocalServer').classList.add('hidden')">OK</button>
         </div>
      </div>
+
+     <div class="popup hidden" id="errorLoading">
+        <p class="heading">Maze file not found</p>
+        <p>You can try uploading your own maze though. </p>
+        <p><i>Troubleshooting:</i> Make sure you have copied the maze files to the same folder as index.html</p>
+        <div style="text-align: right;">
+            <button id="errorLoadingOK" class="ok" onclick="document.getElementById('errorLoading').classList.add('hidden')">OK</button>
+        </div>
+     </div>
+
+     <div class="popup hidden" id="offline">
+        <p class="heading">Check your internet connection...</p>
+        <p> While you're disconnected, you can still load your own mazes :) </p>
+        <p> (You need internet only for loading the default mazes from the picker.) </p>
+        <div style="text-align: right;">
+            <button id="offlineOK" class="ok" onclick="document.getElementById('offline').classList.add('hidden')">OK</button>
+        </div>
+     </div>
      
 <script type="module" src="main.js"></script>
 </body>
