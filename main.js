@@ -37,9 +37,22 @@ mazePicker.addEventListener("change", function(e){
 		}
 		
 		fetch(mazeUrl)
-		.then( r => r.text() )
+		.catch(err => {
+			document.getElementById("offline").classList.remove("hidden");
+			document.getElementById("offlineOK").focus();
+			throw Error(err);
+		})
+		.then( r => {
+			if(r.status != 200){
+				//maybe add a function for making popups to main.js so I can add the name of the maze and a more helpful status message there
+				document.getElementById("errorLoading").classList.remove("hidden");
+				document.getElementById("errorLoadingOK").focus();
+				throw new Error(`File at "${mazeUrl}" not found`);
+			}else{
+				return r.text();
+			}
+		})
    		.then( t => {
-
 			let text = "";
 			let lineEnding = whichLineEnding(t);
 			if(lineEnding == "CRLF"){
@@ -88,7 +101,7 @@ document.getElementById('inputfile').addEventListener('change', function(event) 
 	   	}
 		mazeAppClassHolderVariable = new DijkstraMazeApp(graf);
 		mazeAppClassHolderVariable.renderMaze(text);
-        	mazeAppClassHolderVariable.startDijkstra(); //entry point to our actual program
+		mazeAppClassHolderVariable.startDijkstra(); //entry point to our actual program
     }
     fr.readAsText(this.files[0]);
     document.getElementById("selectedFileLabel").textContent = this.files[0].name;
