@@ -295,9 +295,16 @@ class HranyDoprava {
     // (holt proste misto ready to output je cast pridavani grafu tady)
     constructor(mode) {
         this.lis = [];  //for "normal" nodes from a left '-' character to a to the right stop
-        this.lis2 = []; //for nodes discovered on the right or on the bottom to the 'C' (depends on mode), which are oppositely oriented (opačně orientované) to the nodes generated from this.lis
+        this.cil = []; //for nodes discovered on the right or on the bottom to the 'C' (depends on mode), which are oppositely oriented (opačně orientované) to the nodes generated from this.lis
+        this.lis2 = [];
         this.mode = mode;
         this.setInitialValue = false;
+        //syntax sugar to make it more clearer what calls are for
+        this.hranyDoCile = {};
+        this.hranyDoCile.addHranaSem = this.addHranaSem.bind(this);
+        this.hranyDoCile.getEdgeData = this.getEdgeData2.bind(this);
+        this.hranyDoCile.addEdgeFromHere = this.addEdgeFromHere.bind(this);
+        this.hranyDoCile.reset = this.reset2.bind(this);
     }
 
     addHranaOdsud(coordinates) {
@@ -310,6 +317,14 @@ class HranyDoprava {
         //Add edge to this node (to a node which will be discovered later)
         //For the 'C' (end) node  => to make directed edges from the node discovered on the right to the 'C'
         this.setInitialValue = true;
+        this.cil = coordinates;
+    }
+    addEdgeFromHere(coordinates){
+		//if this is called before 'C' was found in the maze, to avoid putting garbage in lis2
+		if(this.cil.length == 0){
+			return;
+		}
+		//TODO: add a filter here = which edges are here
         this.lis2.push(coordinates);
     }
 
@@ -327,21 +342,43 @@ class HranyDoprava {
             }
             returnList.push([[x, y], [stopX, stopY], numDots, 'directed']);
         }
+		return returnList;
+    }
+
+    getEdgeData2(stopNode){
+        this.lis2.push(stopNode);
+		//if this is called before 'C' was found in the maze
+		//to avoid nodes with 'undefined' as coordinates
+		if(this.cil.length == 0){
+			return [];
+		}
+        const [stopX, stopY] = this.cil;
+        const returnList = []; // ((x,y), (stopX, stopY), numDots, 'directed')
         //same for lis2, for edges going to 'C':
         for (const [x, y] of this.lis2) {
             let numDots = 0;
             if (this.mode === "horizontal") {
-                numDots = stopY - y + 1;
+				/*y (from which node is being directed) is further right than stopY (to which the node is being directed )
+				because were traversing the maze top down, left to right
+				*/
+                numDots = y - stopY + 1;
             } else if (this.mode === "vertical") {
-                numDots = stopX - x + 1;
+				/*x (from which node is being directed) is further down than stopX (to which the node is being directed )
+				because were traversing the maze top down, left to right
+				*/
+                numDots = x - stopX + 1;
             }
-            returnList.push([[stopX, stopY], [x, y], numDots, 'directed']);
+            returnList.push([[x, y], [stopX, stopY], numDots, 'directed']);
         }
         return returnList;
     }
 
     reset() {
         this.lis = [];
+    }
+    reset2(){
+		this.cil = []; //treba teto vlastnosti reset?
+        this.lis2 = [];
     }
 }
 function mazeTextToGraph(maze){
@@ -403,8 +440,26 @@ function mazeTextToGraph(maze){
             }else if(znak == 'C'){
                 graf.endCoordinates = [indexRadky, indexZnaku];
 
+                hranyDoprava.getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
+                    graf.add(...hrana);
+                    //pridani resetu sem pr na uk.txt udela z "2,1" hranu do [2,2],2], ale uz ne do [[2,4],4], (predtim oboji)
+                    // => nekonzistentni s jinymi smery (pr nahoru, nebo doleva kde jsou obe hrany)
+                    //pr doleva: "2,4": "[[[2,0],5],[[2,2],3],[[0,4],3],[[4,4],3]]", (ze to je krome [[2,2],3] i [[2,0],5])
+                    //pr nahoru: "5,2": "[[[5,1],2],[[0,2],6],[[2,2],4],[[5,3],2]]", (ze to je krome [[2,2],4] i [[0,2],6])
+                    hranyDoprava.reset();
+                });
+
+                hranyDolu[indexZnaku].getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
+                    graf.add(...hrana);
+                    //pridani resetu sem pr na uk.txt udela z "1,2": hranu do [2,2],2], ale uz ne do [5,2],5] (predtim oboji)
+                    // => nekonzistentni s jinymi smery (pr nahoru, kde jsou obe hrany)
+                    hranyDolu[indexZnaku].reset();
+                });
+
+				hranyDoprava.hranyDoCile.reset();
+				hranyDolu[indexZnaku].hranyDoCile.reset();
                 //directed edge from right to C
-                hranyDoprava.addHranaSem([indexRadky, indexZnaku]);
+                hranyDoprava.hranyDoCile.addHranaSem([indexRadky, indexZnaku]);
                 //directed edge from left to C
                 hranyDoleva.peekO([indexRadky, indexZnaku]);
                 if (hranyDoleva.readyToOutput) {
@@ -428,25 +483,7 @@ function mazeTextToGraph(maze){
                 //a nebo (imho asi lepsi = udelat na to dalsi tridu)
                 // => to ale znamena ve vsech dalsich mistech ji dalsi tridu trackovat => lepsi to pridat do hranyDoprava
                 //(NO UNDIRECTED EDGES)
-                hranyDolu[indexZnaku].addHranaSem([indexRadky, indexZnaku]);
-
-
-
-                hranyDoprava.getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
-                    graf.add(...hrana);
-                    //pridani resetu sem pr na uk.txt udela z "2,1" hranu do [2,2],2], ale uz ne do [[2,4],4], (predtim oboji)
-                    // => nekonzistentni s jinymi smery (pr nahoru, nebo doleva kde jsou obe hrany)
-                    //pr doleva: "2,4": "[[[2,0],5],[[2,2],3],[[0,4],3],[[4,4],3]]", (ze to je krome [[2,2],3] i [[2,0],5])
-                    //pr nahoru: "5,2": "[[[5,1],2],[[0,2],6],[[2,2],4],[[5,3],2]]", (ze to je krome [[2,2],4] i [[0,2],6])
-                    hranyDoprava.reset();
-                });
-
-                hranyDolu[indexZnaku].getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
-                    graf.add(...hrana);
-                    //pridani resetu sem pr na uk.txt udela z "1,2": hranu do [2,2],2], ale uz ne do [5,2],5] (predtim oboji)
-                    // => nekonzistentni s jinymi smery (pr nahoru, kde jsou obe hrany)
-                    hranyDolu[indexZnaku].reset();
-                });
+                hranyDolu[indexZnaku].hranyDoCile.addHranaSem([indexRadky, indexZnaku]);
 
                 //so far, 'C' is inside many edges as the target, but there isn't a node for 'C',
                 //so add a node for 'C':            //could be any number
@@ -465,6 +502,25 @@ function mazeTextToGraph(maze){
                     hranyDoprava.reset();
                 });
 
+                hranyDoprava.hranyDoCile.getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
+                    graf.add(...hrana);
+                    hranyDoprava.hranyDoCile.reset();
+                });
+
+                //previously TODO: A check here for hranyDolu.addHranaSem would be nice (=edge registered in 'C')
+                // => because it would be possible to go  from [6,4] upwards to 'C'  just fine
+                //=> MAYBE BECAUSE OF THIS, I SHOULD ADD addHranaSem TO EDGES GOING UP
+                // (ANOTHER REASON for such change (before last commit 3f869213f6c47f782dbb9cf86d4c262a1488887b) was, THAT edges directed up to 'C' could be made from more squares)
+                // => from more '-' characters up, (but of courese only from one '|' up => because below is is a '#')
+                //(A similar bug is there symetrically at hranyDoprava (where there is also addHranaSem))
+                //MAYBE CHANGE TO hranyNahoru FOR BETTER SEMANTICS = for all others '-' and '|' it will be an edge up
+                //=> Semantically, it would make sense: What from 'C' are hranyDoprava.hranyDoCile ,                 (spis by se mohlo jmenovat hranyZprava.hranyDocile)
+                //   are for other squares hranyDoleva.hranyDoCile (squares which are '|' to the right of 'C', because those to the left are handled by normal hranyDoleva )
+                //likewise with hranyDolu[indexZnaku].hranyDoCile, Down it is from 'C', the goal, but for all squares below 'C' in the same column they are hranyNahoru
+                //JUST SWAPPING hranyDoprava for hranyDoleva is not possible, because hranyDoprava is instanceof HranyDoprava, where I added hranyDoCile, but hranyDoleva is instanceof TwoItems, where I didn't add anything like this
+                //likewise with hranyDolu and hranyNahoru - they're different classes (and TwoItems really is for saving edges between # # on a line/column => really not for this)
+                hranyDolu[indexZnaku].hranyDoCile.addEdgeFromHere([indexRadky, indexZnaku]);
+				
                 //vertical handling
                 hranyNahoru[indexZnaku].peekO([indexRadky, indexZnaku]);
                 if(hranyNahoru[indexZnaku].readyToOutput){
@@ -472,6 +528,8 @@ function mazeTextToGraph(maze){
                 }
                 //hrana odsud dolu (do dolniho zastaveni)
                 hranyDolu[indexZnaku].addHranaOdsud([indexRadky, indexZnaku]);
+
+
             }
             if(['|', 'a'].includes(znak)){
                 //prida orientovanou hranu z nejvic leveho volneho znaku do naseho znaku |
@@ -482,7 +540,8 @@ function mazeTextToGraph(maze){
                 }
 
                 hranyDoprava.addHranaOdsud([indexRadky, indexZnaku]);
-
+                hranyDoprava.hranyDoCile.addEdgeFromHere([indexRadky, indexZnaku]);
+          
                 // vertical handling
                 hranyNahoru[indexZnaku].pushO([indexRadky, indexZnaku]);
                 if (hranyNahoru[indexZnaku].readyToOutput) {
@@ -498,10 +557,16 @@ function mazeTextToGraph(maze){
                     graf.add(...hrana);
                     hranyDolu[indexZnaku].reset();
                 });
+                hranyDolu[indexZnaku].hranyDoCile.getEdgeData([indexRadky, indexZnaku]).forEach(hrana => {
+                    graf.add(...hrana);
+                    hranyDolu[indexZnaku].hranyDoCile.reset();
+                }); //TBD
             }else if(znak == '#'){ //pres krizky cesta z o do o nikdy nevede
                 hranyDoleva.reset();
+                hranyDoprava.hranyDoCile.reset();
                 hranyNahoru[indexZnaku].reset();
-                hranyNahoru[indexZnaku].reset();
+                hranyDolu[indexZnaku].reset();
+                hranyDolu[indexZnaku].hranyDoCile.reset();
                 hranyDoprava.reset();
             }
 
