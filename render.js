@@ -231,6 +231,7 @@ class DijkstraMazeApp{
 		this.poleVidena = {};
 		this.zJakehoPoleJsmeSemPrisli = {};
 		this.delkaCesty = 0;
+		document.documentElement.style.setProperty("--distancesColor", "inherit");
 
 		//setting all to infinity, the source node will be set in renderMaze
 		Object.keys(graf.graf).forEach(key => {
@@ -297,7 +298,6 @@ class DijkstraMazeApp{
 		this.handleTabletChange(mediaQuery);
 	}
 	renderMaze(text){
-		
 		this.createMaze();
 		//odebrani prazdneho radku na konci
 	    if(text[text.length - 1].trim() == ""){
@@ -345,6 +345,16 @@ class DijkstraMazeApp{
 		this.distances[this.startCoordinates] = 0;
 	    console.log("this.endCoordinates", this.endCoordinates);
 	    console.log("this.startCoordinates", this.startCoordinates);
+
+		Object.keys(this.distances).forEach(coordinates => {
+			const [x,y] = coordinates.split(',');
+			console.log("what", coordinates)
+			// alert("add " + x + ' ' + y)
+			this.setTextToCell([x,y], '∞');
+		});
+		this.setTextToCell(this.startCoordinates, '0');
+
+
 	  }
 	  async startDijkstra(){ //async so I can use wait function
 			this.addClassToCell(this.startCoordinates, "start");
@@ -369,7 +379,7 @@ class DijkstraMazeApp{
 					break;
 				}
 				//tohle nejak nefunguje
-				// this.addTextToCell([x,y], this.n);
+				// this.setTextToCell([x,y], this.n);
 				// this.n -= 1;
 				//this looks nice
 				this.addClassToCell([x,y], "cesta");
@@ -399,11 +409,12 @@ class DijkstraMazeApp{
 			}
 			throw new Error(`Invalid parameters ${fromX}, ${fromY}, ${x}, ${y}`);
 		}
-		addTextToCell(coordinates, text){
+		setTextToCell(coordinates, text){
 			let row, column;
 			[row, column] = coordinates;
 			try{
-				this.graphicalMaze.rows[row].cells[column].textContent += text + ',';
+				console.log("coordinates", coordinates);
+				this.graphicalMaze.rows[row].cells[column].querySelector(".s").textContent = text;
 			}catch(TypeError){
 				console.warn("TypeError caught", "row", row, "column", column);
 			}
@@ -498,7 +509,7 @@ class DijkstraMazeApp{
 				this.obarviPolePoCeste(x1, y1, smer);
 				pole = [x1,y1];
 				this.addClassToCell([x1,y1], "prev");
-				// this.addTextToCell([x1, y1], counterOdKonce);
+				// this.setTextToCell([x1, y1], counterOdKonce);
 				counterOdKonce += 1;
 				if(smer != 'NO'){
 					sled.push(smer);
@@ -520,7 +531,58 @@ class DijkstraMazeApp{
 			this.walkThroughCesta(cesta, delkyHranList);
 			return [cesta, delkyHranList]; //takto se v JS returnuji 2 arrays, tento return pro console.log
 		}
+		setEdge([fromX, fromY], [toX,toY], className){
+			if(fromX == toX && fromY != toY){
+				for(let y = Math.min(fromY, toY); y <= Math.max(fromY, toY); y++){
+					this.addClassToCell([fromX, y], className);
+				}
+			}else if(fromY == toY && fromX != toX){
+				for(let x = Math.min(fromX, toX); x <= Math.max(fromX, toX); x++){
+					this.addClassToCell([x, fromY], className);
+				}
+			}else{
+				//mozna to bude delat neco funky u "hrany" z 'C'
+				//bude, protoze tam je toX a toY undefined
+				if((String([fromX, fromY]) == String(this.endCoordinates) && toX == undefined) ||
+				   (String([toX, toY]) == String(this.endCoordinates) && fromY == undefined)
+				){
+					return;
+				}
+				throw Error(`Zero length edge in graph from ${fromX}, ${fromY} to ${toX}, ${toY}`);
+			}
+		}
+
+		unsetEdge([fromX, fromY], [toX,toY], className){
+			if(fromX == toX && fromY != toY){
+				for(let y = Math.min(fromY, toY); y <= Math.max(fromY, toY); y++){
+					this.removeClassFromCell([fromX, y], className);
+				}
+			}else if(fromY == toY && fromX != toX){
+				for(let x = Math.min(fromX, toX); x <= Math.max(fromX, toX); x++){
+					this.removeClassFromCell([x, fromY], className);
+				}
+			}else{
+				//mozna to bude delat neco funky u "hrany" z 'C'
+				//mozna to bude delat neco funky u "hrany" z 'C'
+				//bude, protoze tam je toX a toY undefined
+				if((String([fromX, fromY]) == String(this.endCoordinates) && toX == undefined) ||
+				   (String([toX, toY]) == String(this.endCoordinates) && fromY == undefined)
+				){
+					return;
+				}
+				throw Error(`Zero length edge in graph from ${fromX}, ${fromY} to ${toX}, ${toY}`);
+			}
+		}
 		
+		/* putting this in a function like this and calling from say runDijkstra causes async hell */
+		//mozna by to nejak slo vyresit pomoci .then chainu, a potom return Promise, az budeme s sleep hotovi?
+		// async setEdgeExplored([fromX, fromY], [toX,toY]){
+		// 	this.setEdge([fromX, fromY], [toX,toY], "visited");
+		// 	this.setEdge([fromX, fromY], [toX,toY], "explored");
+		// 	await wait(1000);
+		// 	this.unsetEdge([fromX, fromY], [toX,toY], "explored");
+		// }
+
 		async runDijkstra(){
 			// let x,y, direction;
 			let exploredNodes = new Set();
@@ -533,6 +595,17 @@ class DijkstraMazeApp{
 				}
 				exploredNodes.add(String([fromX,fromY]));
 
+				//stop search if solution has been found
+				//(maybe add a fun fact button to scan the rest)
+				if(String([fromX, fromY]) == String(this.endCoordinates)){
+					console.log(this.distances[this.endCoordinates]);
+					this.delkaCesty = this.distances[this.endCoordinates]; //delka cesty v polickach
+					document.documentElement.style.setProperty("--distancesColor", "transparent");
+					console.log(this.distances);
+					console.log(this.vypisCestu(...this.endCoordinates));
+					return;
+				}
+
 				let volnaOkolniPole = this.graf[[fromX, fromY]]; //neighbors list
 				//update distance, if newly discovered is smaller
 				for(const [[x,y], weight] of volnaOkolniPole){
@@ -542,21 +615,37 @@ class DijkstraMazeApp{
 					if(exploredNodes.has(String([x,y]))){ //String needed, otherwise set compares by reference
 						continue;
 					}
-			
+					
+					//setEdgeExplored
+					this.addClassToCell([fromX, fromY], "from");
+					// this.setEdge([fromX, fromY], [x,y], "visited");
+					this.setEdge([fromX, fromY], [x,y], "explored");
+					await wait(parseInt(animationDelay.value));
+					
+					
+
 					//this.distances build up is essentially dynamic programming
 					if(this.distances[[fromX, fromY]] + weight < this.distances[[x,y]]){
 						//the lengths of edges include the nodes they're between, so these nodes get counted two times each (except the start and end node)
 						//these differences on each two adjacent edges accumulate, so the final result is inflated
 						// => count each of them precisely once
 						this.distances[[x,y]] = this.distances[[fromX, fromY]] + weight - 1;
+						this.setTextToCell([x,y], this.distances[[x,y]]);
 						this.zJakehoPoleJsmeSemPrisli[[x,y]] = [fromX, fromY];
+
+						await wait(parseInt(animationDelay.value));
 						this.fronta.push([[x,y], this.distances[[x,y]]]);
 					}
+
+					this.unsetEdge([fromX, fromY], [x,y], "explored");
+					this.removeClassFromCell([fromX, fromY], "from");
+
 				}
 			}
 			console.log(this.distances[this.endCoordinates]);
 			this.delkaCesty = this.distances[this.endCoordinates]; //delka cesty v polickach
 			console.log(this.distances);
+			document.documentElement.style.setProperty("--distancesColor", "transparent");
 			console.log(this.vypisCestu(...this.endCoordinates));
 		}
 		addClassToCell(coordinates, className){
