@@ -7,6 +7,9 @@
     <style type="text/css">
         @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
         
+        :root{
+            --distancesColor: inherit
+        }
         .selectedOnWalkThrough{
             filter: invert(1) contrast(0.8);
             /* outline: 2px solid #026bbe; which after filter gives: #e4904d; */
@@ -95,6 +98,7 @@
         }
         .s{
             aspect-ratio: 1 / 1;
+            color: var(--distancesColor);
         }
         #mapText{
             overflow-x: scroll;
@@ -105,9 +109,6 @@
             width:   0.5vw;
             min-height: 15px;
             min-width: 15px;
-        }
-        .skippedText{
-            color: #4eb54b;
         }
         .green{
             background: green;
@@ -137,8 +138,11 @@
         .visitedText{
             color: #c77e1fbf;
         }
-        .skipped{
+        .explored{
             background: #6acd67;
+        }
+        .exploredText{
+            color: #4eb54b;
         }
         .end{
             background: #0022a5 !important;  /* maybe #00a56f;*/
@@ -318,7 +322,14 @@
             .skipped:not(.green, .start){
                 background: #4eb54bc2; 
             }
-            .skippedText{
+            /*nutne pridat :not(.green, .start), aby to mathchlo specificitu (a prebilo, protoze je pod tim) .visited:not(.green, .start)*/
+            .explored:not(.green, .start){
+                background: #4eb54bc2; /*#4eb54b*/
+            }
+            .from{
+                outline: 2px solid white;
+            }
+            .exploredText{
                 color: #4eb54bc2;
             }
             .inlineCode{
@@ -377,7 +388,7 @@
                 <label id="selectedFileLabel" style="font-family:Tahoma,sans-serif;padding-left: 4px;"></label>
               </div>
               <p id="visualisationDelayControls">Delay in ms:
-              <input disabled type="number" min="0" style="width: 5rem" value="7" id="visualisationDelayPicker">
+              <input type="number" min="0" style="width: 5rem" value="1000" id="visualisationDelayPicker">
               </p>
             </div>
         </div>
@@ -389,12 +400,12 @@
             </div>
             <!-- <div class="textHolder">
                 <div class="visited ctverecek"></div>
-                <b class="visitedText popisek">visited cell</b>
-            </div>
-            <div class="textHolder">
-                 <div class="skipped ctverecek"></div>
-                <b class="skippedText popisek">2 times visited cell</b>
+                <b class="visitedText popisek">visited edge</b>  asi closed edge? se tomu spravne rika
             </div> -->
+            <div class="textHolder">
+                 <div class="explored ctverecek"></div>
+                <b class="exploredText popisek">currently explored edge</b> 
+            </div> 
             <div class="textHolder">
                 <div class="start ctverecek"></div>
                 <b class="startText popisek">start</b>
