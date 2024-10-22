@@ -102,10 +102,15 @@
         }
         td{
             font-family: Consolas;
-            height:  0.5vw;
-            width:   0.5vw;
-            min-height: 15px;
-            min-width: 15px;
+            height:  calc(max(0.5vw, 1lh) * var(--maxNumChars));
+            width:   calc(max(0.5vw, 1lh) * var(--maxNumChars)); /*0.5vw;*/
+            min-height: calc(max(1lh,15px) * var(--maxNumChars));
+            min-width: calc(max(1lh,15px)  * var(--maxNumChars)); /*15px;*/
+            box-sizing: border-box;
+        }
+        .s{
+            box-sizing: border-box;
+            font-size: clamp(min(14px, 0.9lh) * var(--maxNumChars), min(0.9lh, 0.4vw) * var(--maxNumChars), 30px);
         }
         .green{
             background: green;
