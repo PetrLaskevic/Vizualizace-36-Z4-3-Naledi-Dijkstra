@@ -311,6 +311,7 @@ class DijkstraMazeApp{
 	    [this.pocetRows,this.pocetColumns] = text[0].split(' ').map(Number);
 
 		this.fronta = new priorityQueue(this.pocetRows*this.pocetColumns);
+		this.graphicalMaze.style.setProperty("--maxNumChars", String(Math.max(this.pocetColumns, this.pocetRows)).length);
 	   
 	    this.tryToFitTheMazeOnScreen();
 	    let mapText = document.getElementById("mapText");
