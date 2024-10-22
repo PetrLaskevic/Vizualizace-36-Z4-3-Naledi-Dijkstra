@@ -231,7 +231,6 @@ class DijkstraMazeApp{
 		this.poleVidena = {};
 		this.zJakehoPoleJsmeSemPrisli = {};
 		this.delkaCesty = 0;
-		document.documentElement.style.setProperty("--distancesColor", "inherit");
 
 		//setting all to infinity, the source node will be set in renderMaze
 		Object.keys(graf.graf).forEach(key => {
@@ -255,6 +254,8 @@ class DijkstraMazeApp{
 		this.resultParagraph = document.createElement("p");
 		this.resultParagraph.className = "presentResult";
 		document.getElementById("tableContainer").appendChild(this.resultParagraph);
+
+		this.graphicalMaze.style.setProperty("--distancesColor", "unset");
 	}
 	handleTabletChange(e) {
 		// Check if the media query is true
@@ -600,7 +601,7 @@ class DijkstraMazeApp{
 				if(String([fromX, fromY]) == String(this.endCoordinates)){
 					console.log(this.distances[this.endCoordinates]);
 					this.delkaCesty = this.distances[this.endCoordinates]; //delka cesty v polickach
-					document.documentElement.style.setProperty("--distancesColor", "transparent");
+					this.graphicalMaze.style.setProperty("--distancesColor", "transparent");
 					console.log(this.distances);
 					console.log(this.vypisCestu(...this.endCoordinates));
 					return;
@@ -645,7 +646,7 @@ class DijkstraMazeApp{
 			console.log(this.distances[this.endCoordinates]);
 			this.delkaCesty = this.distances[this.endCoordinates]; //delka cesty v polickach
 			console.log(this.distances);
-			document.documentElement.style.setProperty("--distancesColor", "transparent");
+			this.graphicalMaze.style.setProperty("--distancesColor", "transparent");
 			console.log(this.vypisCestu(...this.endCoordinates));
 		}
 		addClassToCell(coordinates, className){
