@@ -24,9 +24,13 @@ class ResponsiveGrid extends HTMLElement {
                     justify-content: center;
                     align-items: center;
                     border: 1px solid #ccc;
-                    background-color: #fff;
                     box-sizing: border-box; /* Include border in dimensions */
                     overflow: hidden; /* Ensure text does not overflow */
+                }
+                @media (prefers-color-scheme: dark) {
+                    :root{
+                        color-scheme: dark;
+                    }
                 }
             </style>
         `;
