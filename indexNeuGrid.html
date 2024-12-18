@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Grid Component</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            padding: 10px;
+            text-align: center;
+            background-color: #ddd;
+            width: 100%;
+            flex: 0 0 auto; /* Ensure the header doesn't shrink or grow */
+        }
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            overflow: auto; /* Allow main content to scroll if needed */
+        }
+        responsive-grid {
+            width: 100%;
+            height: calc(100vh - 60px); /* Adjust height calculation based on header height */
+        }
+        .extra-content {
+            padding: 20px;
+            background-color: #f8f8f8;
+            width: 100%;
+            text-align: center;
+        }
+
+        /*header styles*/
+        .ctverecek{
+            height: 1.25rem;
+            width: 1.25rem;
+            aspect-ratio: 1/1;
+        }
+        .visited{
+            background: #c77e1f;
+        }
+        .visitedText{
+            color: #c77e1fbf;
+        }
+        .explored{
+            background: #6acd67;
+        }
+        .exploredText{
+            color: #4eb54b;
+        }
+        .end{
+            background: #0022a5 !important;  /* maybe #00a56f;*/
+        }
+        .start{
+            background: #f85701 !important;
+        }
+        .endText{
+            color: #0022a5;
+        }
+        .endCtverecek{
+            background: #0022a5;
+        }
+        .startText{
+            color: #f85701;
+        }
+        .green{
+            background: green;
+        }
+        .greenText{
+            color: green;
+        }
+        .textHolder{
+            display: flex;
+            gap: 5px;
+            font-size: 1.5rem !important;
+            align-items: baseline;
+        }
+    </style>
+</head>
+<body>
+    <!-- <header>
+        <h1>My Responsive Grid</h1>
+    </header> -->
+    <header id="controls" style="display: flex;flex-wrap: wrap;gap: 28px;"> 
+        <div>
+          <h1 style="margin: 0 auto;width: fit-content;">36-Z4-3 Náledí Dijkstra</h1>
+          <div id="left" style="display: inline-flex;align-items: baseline;flex-wrap: wrap;column-gap: 10px;justify-content: center;">
+            <select autofocus  id="mazePicker">
+              <option value="">Select the maze</option>
+              <option>uk.txt</option>
+              <option>01.txt</option>
+              <option>02.txt</option>
+              <option>03.txt</option>
+            </select>
+              OR
+            <input hidden type="file" accept="text/plain" id="inputfile">
+              <div>
+                  <button id="fakefileinput">
+                      <label for="inputfile" class="custom-file-upload"> Load your own...</label>
+                  </button>
+                  <label id="selectedFileLabel" style="font-family:Tahoma,sans-serif;padding-left: 4px;"></label>
+                </div>
+                <p id="visualisationDelayControls">Delay in ms:
+                <input type="number" min="0" style="width: 5rem" value="1000" id="visualisationDelayPicker">
+                </p>
+              </div>
+          </div>
+          <div id="right" style="flex-grow: 1;flex-basis: 431px;min-width: min-content;"> <!-- originally there was flex-basis: min-content; it worked pretty well, I just wanted to move the breakpoint of how it wraps to a bit wider, I wanted to put flex-basis: calc(min-content + 50px), but it doesn't work, so I tried padding-left: 50px, which worked, but it looked weird again on my phone (I didn't want to add more media query, so I added flex-basis: 431px (value found experimentally)) -->
+            <div id="legenda" style="display: flex;gap:20px;flex-wrap: wrap">
+              <div class="textHolder">
+                  <div class="green ctverecek"></div>
+                  <b class="greenText popisek">wall</b>
+              </div>
+              <div class="textHolder">
+                   <div class="explored ctverecek"></div>
+                  <b class="exploredText popisek">currently explored edge</b> 
+              </div> 
+              <div class="textHolder">
+                  <div class="start ctverecek"></div>
+                  <b class="startText popisek">start</b>
+              </div>
+              <div class="textHolder">
+                  <div class="endCtverecek ctverecek"></div>
+                  <b class="endText popisek">end</b>
+              </div>
+            </div>
+          </div>
+    </header>
+    <main>
+        <responsive-grid rows="4" columns="4" max-length="2"></responsive-grid>
+    </main>
+    <script src="component7.js"></script>
+</body>
+</html>
