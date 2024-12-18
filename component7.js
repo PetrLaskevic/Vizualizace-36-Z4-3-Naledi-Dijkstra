@@ -17,9 +17,11 @@ class ResponsiveGrid extends HTMLElement {
                     display: grid;
                     width: 100%;
                     height: 100%;
-                    /*justify-content: center;*/
+                    /*padding here would create an overflow*/
+                    /*padding: 5px;*/
                 }
                 .cell {
+                    /*flexbox used to center text here*/
                     display: flex;
                     justify-content: center;
                     align-items: center;
