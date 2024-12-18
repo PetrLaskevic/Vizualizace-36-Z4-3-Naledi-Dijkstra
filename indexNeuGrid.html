@@ -32,6 +32,14 @@
         responsive-grid {
             width: 100%;
             height: calc(100vh - 60px); /* Adjust height calculation based on header height */
+
+            /*
+            visually creates padding around the grid
+            (other ways like setting padding or margin as CSS properties caused overflow)
+            (as the widget is designed to scale as much as it can => 
+            the alternative would be introducing the same multiplying coefficent in the calculation algorithm)
+            */
+            transform: scale(0.955);
         }
         .extra-content {
             padding: 20px;
