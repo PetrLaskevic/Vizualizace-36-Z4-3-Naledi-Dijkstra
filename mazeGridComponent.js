@@ -52,13 +52,50 @@ class ResponsiveGrid extends HTMLElement {
         window.removeEventListener('resize', this.handleResize.bind(this));
     }
 
+    //public function, returns the cell at the specified index
+    at(row, column){
+        if(row == this.rows || column == this.columns){
+            throw Error(`IndexError, ${row}, ${column}, while size is ${this.rows}, ${this.columns}`)
+        }
+        //row coordinate * length of row 
+        return this.grid.children[row * this.columns + column]
+    }
 
     //public function
-    renderMaze(){
-        //renders a maze from a 2D array of characters
+    //renders a maze from a 2D array of characters
+    renderMaze(mazeArray){
         //(2D Array of characters, abych nemusel tady po 3. rozhodovat whichLineEnding)
-        console.log("hello");
-        alert("hi");
+        
+        //odebrani prazdneho radku na konci
+	    if(mazeArray[mazeArray.length - 1].trim() == ""){
+	    	text.pop();
+	    }
+
+		this.dbgMazeText = mazeArray.slice(1).map(row => row.split('')); //for debugging dbgMazeText console.table(this.dbgMazeText)
+		console.log(mazeArray);
+
+        //empty grid was created from the constructor, 
+        //so now assign proper classes to the existing cells
+
+        //First row is maze size info (this.pocetRows,this.pocetColumns), so skipping it
+        //actual maze starts on second row
+        for(let x = 1; x < mazeArray.length; x++){ //mazeArray.length == this.rows
+            let row = mazeArray[x].split("");
+
+            for(let y = 0; y < mazeArray[1].length; y++){
+                let character = row[y];
+                if(character == "#"){
+                    //first row are maze dimensions, so x - 1 to get correct index
+                    this.at(x - 1 ,y).classList.add("green");
+                    // console.log("ww")
+                }else if(character == "S"){
+
+                }else if(character == "E"){
+
+                }
+            }
+        }
+
     }
 
     handleResize() {
