@@ -10,7 +10,6 @@ function whichLineEnding(source) {
 
 let mazePicker = document.getElementById("mazePicker");
 let mazeAppClassHolderVariable; //the instance of the maze app
-let zasobnik;
 
 mazePicker.addEventListener("change", function(e){
 	let mazeSelected = mazePicker.value;
@@ -106,21 +105,6 @@ document.getElementById('inputfile').addEventListener('change', function(event) 
     fr.readAsText(this.files[0]);
     document.getElementById("selectedFileLabel").textContent = this.files[0].name;
 });
-
-
-//https://stackoverflow.com/a/53452241/11844784
-function wait(ms) {
-	if(ms > 0){
-		return new Promise((resolve, reject) => {
-			setTimeout(() => {
-				resolve(ms)
-			}, ms )
-		})
-	}else{
-		return;
-	}
-}
-
 
 
 console.log("yes");
