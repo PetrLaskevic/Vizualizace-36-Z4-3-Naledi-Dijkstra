@@ -52,46 +52,58 @@ class ResponsiveGrid extends HTMLElement {
         window.removeEventListener('resize', this.handleResize.bind(this));
     }
 
-    handleResize() {
-        this.createGrid();
+
+    //public function
+    renderMaze(){
+        //renders a maze from a 2D array of characters
+        //(2D Array of characters, abych nemusel tady po 3. rozhodovat whichLineEnding)
+        console.log("hello");
+        alert("hi");
     }
 
-    createGrid() {
-        const grid = this.shadowRoot.getElementById('grid');
+    handleResize() {
+        //Calculates widths of cells 
+        this.grid = this.shadowRoot.getElementById('grid');
         const { clientWidth, clientHeight } = this.shadowRoot.host.parentElement;
         console.log(this.shadowRoot.host); //<responsive-grid rows="15" columns="20" max-length="3"></responsive-grid>
         console.log(this.shadowRoot)
 
         // Determine the smallest dimension to ensure square cells
-        const cellSize = Math.min(clientWidth / this.columns, clientHeight / this.rows);
+        this.cellSize = Math.min(clientWidth / this.columns, clientHeight / this.rows);
 
         // Set the grid template with fixed cell size
-        grid.style.gridTemplateColumns = `repeat(${this.columns}, ${cellSize}px)`;
-        grid.style.gridTemplateRows = `repeat(${this.rows}, ${cellSize}px)`;
+        this.grid.style.gridTemplateColumns = `repeat(${this.columns}, ${this.cellSize}px)`;
+        this.grid.style.gridTemplateRows = `repeat(${this.rows}, ${this.cellSize}px)`;
 
-        // Clear previous content
-        grid.innerHTML = '';
+        this.adjustFontSize(this.grid, this.cellSize);
 
-        // Create grid cells
+    }
+
+    createGrid() {
+        //Creates HTML fot the cells when the widget is constructed
+        this.handleResize();
         for (let i = 0; i < this.rows * this.columns; i++) {
             const cell = document.createElement('div');
             cell.className = 'cell';
-            cell.textContent = Math.floor(Math.random() * Math.pow(10, this.maxLength)).toString();
-            grid.appendChild(cell);
+            cell.textContent = " ".repeat(this.maxLength);
+            this.grid.appendChild(cell);
         }
-
-        // Adjust font size to fit cells
-        this.adjustFontSize(grid, cellSize);
+        this.adjustFontSize(this.grid, this.cellSize);
     }
 
     adjustFontSize(grid, cellSize) {
+        //Sets the maximum possible font size to cells, 
+        //so that the text of maximum length this.maxLength fits without overflow
         const cells = grid.getElementsByClassName('cell');
 
         for (let cell of cells) {
             let fontSize = cellSize / 2; // Initial font size guess
             cell.style.fontSize = fontSize + 'px';
             cell.style.lineHeight = 1;
-
+            
+            //The font size ends up to be the same for all cells (nice) even when the length of text differs: i.e is 1 or 2
+            //(demo in component7.js with random numbers)
+            // => So, there could be a speed up when resizing the grid, by only computing the font size for the first cell
             // Decrease font size until it fits within the cell's dimensions
             while (fontSize > 0 && (cell.scrollWidth > cell.clientWidth || cell.scrollHeight > cell.clientHeight)) {
                 fontSize--;
