@@ -65,8 +65,8 @@ class ResponsiveGrid extends HTMLElement {
         //Calculates widths of cells 
         this.grid = this.shadowRoot.getElementById('grid');
         const { clientWidth, clientHeight } = this.shadowRoot.host.parentElement;
-        console.log(this.shadowRoot.host); //<responsive-grid rows="15" columns="20" max-length="3"></responsive-grid>
-        console.log(this.shadowRoot)
+        // console.log(this.shadowRoot.host); //<responsive-grid rows="15" columns="20" max-length="3"></responsive-grid>
+        // console.log(this.shadowRoot)
 
         // Determine the smallest dimension to ensure square cells
         this.cellSize = Math.min(clientWidth / this.columns, clientHeight / this.rows);
@@ -95,20 +95,24 @@ class ResponsiveGrid extends HTMLElement {
         //Sets the maximum possible font size to cells, 
         //so that the text of maximum length this.maxLength fits without overflow
         const cells = grid.getElementsByClassName('cell');
-
+        let loopRan = false;
         for (let cell of cells) {
             let fontSize = cellSize / 2; // Initial font size guess
             cell.style.fontSize = fontSize + 'px';
             cell.style.lineHeight = 1;
             
-            //The font size ends up to be the same for all cells (nice) even when the length of text differs: i.e is 1 or 2
-            //(demo in component7.js with random numbers)
-            // => So, there could be a speed up when resizing the grid, by only computing the font size for the first cell
+            /*The font size ends up to be the same for all cells (nice) even when the length of text differs: i.e is 1 or 2
+            (demo in component7.js with random numbers)
+             => So, there is be a speed up when resizing the grid, by only computing the font size for the first cell*/
+            if (loopRan){
+                continue;
+            }
             // Decrease font size until it fits within the cell's dimensions
             while (fontSize > 0 && (cell.scrollWidth > cell.clientWidth || cell.scrollHeight > cell.clientHeight)) {
                 fontSize--;
                 cell.style.fontSize = fontSize + 'px';
             }
+            loopRan = true;
         }
     }
 }
