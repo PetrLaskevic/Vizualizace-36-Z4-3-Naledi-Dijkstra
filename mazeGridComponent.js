@@ -54,18 +54,24 @@ class ResponsiveGrid extends HTMLElement {
                     /*padding here would create an overflow*/
                     /*padding: 5px;*/
                 }
+                /*Remove border from cell, because borders are not the same width on the outer cells
+                (becomes apparent when setting border: 5px solid #0a0a0d;)
+                TODO: So, better use grid gap
+                */
                 .cell {
                     /*flexbox used to center text here*/
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    border: 1px solid #ccc;
                     box-sizing: border-box; /* Include border in dimensions */
                     overflow: hidden; /* Ensure text does not overflow */
                 }
                 @media (prefers-color-scheme: dark) {
                     :root{
                         color-scheme: dark;
+                    }
+                    .cell{
+                        background: #0a0a0d;
                     }
                 }
             </style>
