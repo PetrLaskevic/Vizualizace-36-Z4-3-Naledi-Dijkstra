@@ -1,19 +1,44 @@
 class ResponsiveGrid extends HTMLElement {
+    static get observedAttributes() { return ['rows', 'columns', 'max-length', 'cell-styles']; 
+    }
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
+        //Both if the element is created statically and dynamically, these parameters are all undefined now
+
+        //In case of static creation, like so: <responsive-grid rows="15" columns="50" max-length="3" cellStyles="visualisation.css"></responsive-grid>
+            //These JS properties are undefined before assignment from HTML attributes from this.getAttribute
+        
+        /*In case of dynamic creation, these JS properties are undefined because this constructor runs BEFORE their assignment, like so:  
+    
+            let grid = document.createElement("responsive-grid");              <-constructor called here
+
+            //properties set
+            [grid.rows, grid.columns] = text[0].split(' ').map(Number);                                          
+            grid.cellStyles = "./visualisation.css";
+
+            document.querySelector("main").appendChild(grid);                  <- connectedCallback called here, after the element got inserted to the DOM by appendChild
+
+        
+        So the correct usage is to check for these variables in connectedCallback
+
+        Right now, I also hooked up attributeChangedCallback (which needs observedAttributes to be defined ),
+        which when hooked up, gets called three times WHEN CREATING statically <responsive-grid rows="15" columns="50" max-length="3" cellStyles="visualisation.css"></responsive-grid> 
+        For dynamic creation, it WOULD NOT be called in the above code because that sets JS properties
+        To trigger attributeChangedCallback, I would need to run grid.setAttribute("cell-styles", "./visualisations.css");
+            => potentially could be used to reset - redraw the widget (if I decide to design the widget to allow these to be changed)
+                (right now the expected usage is to set this once, then delete the widget after a different maze gets selected, and draw a new ones)
+        */
+
+
+        console.log("from constructor:", this.rows, this.columns, this.maxLength, this.cellStyles);
         this.rows = parseInt(this.getAttribute('rows'));
         this.columns = parseInt(this.getAttribute('columns'));
         this.maxLength = parseInt(this.getAttribute('max-length'));
         this.cellStyles = this.getAttribute("cellStyles");
-        // if(this.getAttribute("cellStyles") === null){
-        //     throw Error("Specify a stylesheet path, else the visualisation will be just white squares");
-        // }
-        //NIKOLI, BYLO TO KVULI HTML ATTRIBUTES VS JS OBJECT PROPERTIES:
-        //funnily enough, attributes that I know work afterwards, are all null here in this constructor
-        //explanation: https://stackoverflow.com/questions/70201172/this-getattribute-not-working-in-web-component-while-violating-the-spec
-        //so this asks for a css file called "null"
-        //@import url("${this.getAttribute("rows")}");
+
+        //and now they're                                        NaN        NaN             NaN             null
+        console.log("from constructor after this.getAttribute:", this.rows, this.columns, this.maxLength, this.cellStyles);
 
         const style = `
             <style>
@@ -53,6 +78,7 @@ class ResponsiveGrid extends HTMLElement {
     }
 
     connectedCallback() {
+        console.log("connected callback called");
         // let style = document.createElement('style');
 
         // The issue (to null a 6) stems from the difference between accessing attributes and properties on a custom element.
@@ -96,8 +122,7 @@ class ResponsiveGrid extends HTMLElement {
     }
 
     attributeChangedCallback(name, oldValue, newValue){
-        console.log("atribute changed called")
-        console.log(name, oldValue, newValue);
+        console.log("atribute changed called", name, oldValue, newValue);
     }
 
     //public function, returns the cell at the specified index
