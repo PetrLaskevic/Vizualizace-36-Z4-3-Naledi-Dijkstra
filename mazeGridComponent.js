@@ -4,42 +4,12 @@ class ResponsiveGrid extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-        //Both if the element is created statically and dynamically, these parameters are all undefined now
 
-        //In case of static creation, like so: <responsive-grid rows="15" columns="50" max-length="3" cellStyles="visualisation.css"></responsive-grid>
-            //These JS properties are undefined before assignment from HTML attributes from this.getAttribute
-        
-        /*In case of dynamic creation, these JS properties are undefined because this constructor runs BEFORE their assignment, like so:  
-    
-            let grid = document.createElement("responsive-grid");              <-constructor called here
-
-            //properties set
-            [grid.rows, grid.columns] = text[0].split(' ').map(Number);                                          
-            grid.cellStyles = "./visualisation.css";
-
-            document.querySelector("main").appendChild(grid);                  <- connectedCallback called here, after the element got inserted to the DOM by appendChild
-
-        
-        So the correct usage is to check for these variables in connectedCallback
-
-        Right now, I also hooked up attributeChangedCallback (which needs observedAttributes to be defined ),
-        which when hooked up, gets called three times WHEN CREATING statically <responsive-grid rows="15" columns="50" max-length="3" cellStyles="visualisation.css"></responsive-grid> 
-        For dynamic creation, it WOULD NOT be called in the above code because that sets JS properties
-        To trigger attributeChangedCallback, I would need to run grid.setAttribute("cell-styles", "./visualisations.css");
-            => potentially could be used to reset - redraw the widget (if I decide to design the widget to allow these to be changed)
-                (right now the expected usage is to set this once, then delete the widget after a different maze gets selected, and draw a new ones)
-        */
-
-
-        console.log("from constructor:", this.rows, this.columns, this.maxLength, this.cellStyles);
         this.rows = parseInt(this.getAttribute('rows'));
         this.columns = parseInt(this.getAttribute('columns'));
         this.maxLength = parseInt(this.getAttribute('max-length'));
         this.cellStyles = this.getAttribute("cellStyles");
-
-        //and now they're                                        NaN        NaN             NaN             null
-        console.log("from constructor after this.getAttribute:", this.rows, this.columns, this.maxLength, this.cellStyles);
-
+        
         const style = `
             <style>
                 :host {
@@ -85,34 +55,6 @@ class ResponsiveGrid extends HTMLElement {
 
     connectedCallback() {
         console.log("connected callback called");
-        // let style = document.createElement('style');
-
-        // The issue (to null a 6) stems from the difference between accessing attributes and properties on a custom element.
-        // Understanding Attributes and Properties
-        // Attributes: Attributes are part of the HTML and are accessed using methods like getAttribute. They are always strings.
-        // Properties: Properties are part of the JavaScript object and can hold various types of data. Properties are accessed directly on the element (e.g., this.rows).
-
-        // When using this.getAttribute("rows"), you're attempting to retrieve the attribute from the element. 
-        //However, if the attribute hasn't been set yet (for instance, when the element is dynamically created), it will return null.
-        // Because of the difference of HTML attributes and JS properties (HTML attributes are strings for example),
-        //there is this code in the constructor:  this.rows = parseInt(this.getAttribute('rows'));
-        //If there was not, it would not have been synced. 
-        //When creating the element dynamically, like I did in my code:
-                // let grid = document.createElement("responsive-grid");
-                // [grid.rows, grid.columns] = text[0].split(' ').map(Number);
-        //I did not set row or columns as HTML attributes (like: <responsive-grid rows="15" columns="50" max-length="3">)
-        //instead I set the JS properties (AND THUS NEVER SET THE HTML ATTRIBUTE)
-        //so it makes perfect sense, why this.rows was 6 = because I defined it
-        // and why this.getAttribute("rows") was 0, because I didn't define it
-
-        //dalsi priklad tohoto je:
-        // element.className v JS vs class attribute v HTML
-        //(tam to ma ruzne jmeno kvuli naming collision s js class)
-        // (ale hezky to ukazuje, ze ty JS properties a HTML attributes are not the same)
-        // (ikdyz tak casto mohou pusobit, protoze se jmenujou stejne)
-        console.log(this.getAttribute("rows"), this.rows) //null a 6
-        // style.textContent = `@import url("${this.cellStyles}")}");`
-        // this.shadowRoot.appendChild(style);
 
         let link = document.createElement('link');
         link.rel = 'stylesheet';
