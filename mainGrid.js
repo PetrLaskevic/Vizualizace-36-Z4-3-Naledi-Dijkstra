@@ -1,4 +1,5 @@
 import {mazeTextToGraph, prettyPrintGraf} from "./graphGen.js";
+import {DijkstraMazeApp} from "./renderGrid.js";
 
 
 function whichLineEnding(source) {
@@ -58,12 +59,21 @@ mazePicker.addEventListener("change", function(e){
 			prettyPrintGraf(graf);
 
 			//TODO
-            let grid = document.createElement("responsive-grid");
-            [grid.rows, grid.columns] = text[0].split(' ').map(Number);
+			if(mazeAppClassHolderVariable != undefined){
+				mazeAppClassHolderVariable.zcelaHotovo = true;
+				mazeAppClassHolderVariable.hideMaze();
+			}
+			
+            mazeAppClassHolderVariable = new DijkstraMazeApp(graf);
+            mazeAppClassHolderVariable.renderMaze(text);
+            mazeAppClassHolderVariable.startDijkstra(); //entry point to our actual program
+
+            // let grid = document.createElement("responsive-grid");
+            // [grid.rows, grid.columns] = text[0].split(' ').map(Number);
            
-            grid.cellStyles = "./visualisation.css";
-            document.querySelector("main").appendChild(grid);
-            grid.renderMaze(text);
+            // grid.cellStyles = "./visualisation.css";
+            // document.querySelector("main").appendChild(grid);
+            // grid.renderMaze(text);
 
 		});
 	}
