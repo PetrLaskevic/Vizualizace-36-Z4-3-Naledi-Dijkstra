@@ -140,6 +140,12 @@ class ResponsiveGrid extends HTMLElement {
         return this.grid.children[row * this.columns + column]
     }
 
+    addClassToCell(coordinates, className){
+        let row, column;
+        [row, column] = coordinates;
+        this.at(row, column).classList.add(className);
+    }
+
     //public function
     //renders a maze from a 2D array of characters
     renderMaze(mazeArray){
