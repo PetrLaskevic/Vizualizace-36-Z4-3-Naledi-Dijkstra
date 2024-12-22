@@ -75,17 +75,29 @@ class ResponsiveGrid extends HTMLElement {
 
     //public function, returns the cell at the specified index
     at(row, column){
+        if(!Number.isInteger(row) || !Number.isInteger(column)){
+            throw Error("Arguments must be numbers");
+        }
         if(row == this.rows || column == this.columns){
-            throw Error(`IndexError, ${row}, ${column}, while size is ${this.rows}, ${this.columns}`)
+            throw Error(`IndexError, ${row}, ${column}, while size is ${this.rows}, ${this.columns}`);
         }
         //row coordinate * length of row 
-        return this.grid.children[row * this.columns + column]
+        return this.grid.children[row * this.columns + column];
     }
 
     addClassToCell(coordinates, className){
         let row, column;
         [row, column] = coordinates;
         this.at(row, column).classList.add(className);
+    }
+
+    setTextToCell(coordinates, text){
+        if(text.length > this.maxLength){
+            throw Error(`Inserted text ${text} of length ${text.length} must not be longer than maxLength ${this.maxLength}`);
+        }
+        let row, column;
+        [row, column] = coordinates;
+        this.at(row, column).textContent = text;
     }
 
     //public function
@@ -129,8 +141,6 @@ class ResponsiveGrid extends HTMLElement {
         //Calculates widths of cells 
         this.grid = this.shadowRoot.getElementById('grid');
         const { clientWidth, clientHeight } = this.shadowRoot.host.parentElement;
-        // console.log(this.shadowRoot.host); //<responsive-grid rows="15" columns="20" max-length="3"></responsive-grid>
-        // console.log(this.shadowRoot)
 
         // Determine the smallest dimension to ensure square cells
         this.cellSize = Math.min(clientWidth / this.columns, clientHeight / this.rows);
@@ -140,7 +150,6 @@ class ResponsiveGrid extends HTMLElement {
         this.grid.style.gridTemplateRows = `repeat(${this.rows}, ${this.cellSize}px)`;
 
         this.adjustFontSize(this.grid, this.cellSize);
-
     }
 
     createGrid() {
