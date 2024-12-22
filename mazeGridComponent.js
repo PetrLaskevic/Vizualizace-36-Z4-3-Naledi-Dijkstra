@@ -91,6 +91,12 @@ class ResponsiveGrid extends HTMLElement {
         this.at(row, column).classList.add(className);
     }
 
+    removeClassFromCell(coordinates, className){
+        let row, column;
+        [row, column] = coordinates;
+        this.at(row, column).classList.remove(className);
+    }
+
     setTextToCell(coordinates, text){
         if(text.length > this.maxLength){
             throw Error(`Inserted text ${text} of length ${text.length} must not be longer than maxLength ${this.maxLength}`);
