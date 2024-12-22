@@ -1,4 +1,6 @@
 import {mazeTextToGraph, prettyPrintGraf} from "./graphGen.js";
+
+
 function whichLineEnding(source) {
 	var temp = source.indexOf('\n');
 	if (source[temp - 1] === '\r')
@@ -52,13 +54,16 @@ mazePicker.addEventListener("change", function(e){
 				text = t.split("\n");
 			}
 
-			// let graf = mazeTextToGraph(t);
-			// prettyPrintGraf(graf);
+			let graf = mazeTextToGraph(t);
+			prettyPrintGraf(graf);
 
 			//TODO
             let grid = document.createElement("responsive-grid");
             [grid.rows, grid.columns] = text[0].split(' ').map(Number);
+            // grid.setAttribute("cell-styles", "./visualisations.css");
+            grid.cellStyles = "./visualisation.css";
             document.querySelector("main").appendChild(grid);
+            grid.renderMaze(text);
 
 		});
 	}

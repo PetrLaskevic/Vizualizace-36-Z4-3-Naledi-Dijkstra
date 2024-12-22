@@ -5,6 +5,15 @@ class ResponsiveGrid extends HTMLElement {
         this.rows = parseInt(this.getAttribute('rows'));
         this.columns = parseInt(this.getAttribute('columns'));
         this.maxLength = parseInt(this.getAttribute('max-length'));
+        this.cellStyles = this.getAttribute("cellStyles");
+        // if(this.getAttribute("cellStyles") === null){
+        //     throw Error("Specify a stylesheet path, else the visualisation will be just white squares");
+        // }
+        //NIKOLI, BYLO TO KVULI HTML ATTRIBUTES VS JS OBJECT PROPERTIES:
+        //funnily enough, attributes that I know work afterwards, are all null here in this constructor
+        //explanation: https://stackoverflow.com/questions/70201172/this-getattribute-not-working-in-web-component-while-violating-the-spec
+        //so this asks for a css file called "null"
+        //@import url("${this.getAttribute("rows")}");
 
         const style = `
             <style>
@@ -44,12 +53,51 @@ class ResponsiveGrid extends HTMLElement {
     }
 
     connectedCallback() {
+        // let style = document.createElement('style');
+
+        // The issue (to null a 6) stems from the difference between accessing attributes and properties on a custom element.
+        // Understanding Attributes and Properties
+        // Attributes: Attributes are part of the HTML and are accessed using methods like getAttribute. They are always strings.
+        // Properties: Properties are part of the JavaScript object and can hold various types of data. Properties are accessed directly on the element (e.g., this.rows).
+
+        // When using this.getAttribute("rows"), you're attempting to retrieve the attribute from the element. 
+        //However, if the attribute hasn't been set yet (for instance, when the element is dynamically created), it will return null.
+        // Because of the difference of HTML attributes and JS properties (HTML attributes are strings for example),
+        //there is this code in the constructor:  this.rows = parseInt(this.getAttribute('rows'));
+        //If there was not, it would not have been synced. 
+        //When creating the element dynamically, like I did in my code:
+                // let grid = document.createElement("responsive-grid");
+                // [grid.rows, grid.columns] = text[0].split(' ').map(Number);
+        //I did not set row or columns as HTML attributes (like: <responsive-grid rows="15" columns="50" max-length="3">)
+        //instead I set the JS properties (AND THUS NEVER SET THE HTML ATTRIBUTE)
+        //so it makes perfect sense, why this.rows was 6 = because I defined it
+        // and why this.getAttribute("rows") was 0, because I didn't define it
+
+        //dalsi priklad tohoto je:
+        // element.className v JS vs class attribute v HTML
+        //(tam to ma ruzne jmeno kvuli naming collision s js class)
+        // (ale hezky to ukazuje, ze ty JS properties a HTML attributes are not the same)
+        // (ikdyz tak casto mohou pusobit, protoze se jmenujou stejne)
+        console.log(this.getAttribute("rows"), this.rows) //null a 6
+        // style.textContent = `@import url("${this.cellStyles}")}");`
+        // this.shadowRoot.appendChild(style);
+
+        let link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = this.cellStyles;
+        this.shadowRoot.appendChild(link);
+
         this.createGrid();
         window.addEventListener('resize', this.handleResize.bind(this));
     }
 
     disconnectedCallback() {
         window.removeEventListener('resize', this.handleResize.bind(this));
+    }
+
+    attributeChangedCallback(name, oldValue, newValue){
+        console.log("atribute changed called")
+        console.log(name, oldValue, newValue);
     }
 
     //public function, returns the cell at the specified index
@@ -68,7 +116,7 @@ class ResponsiveGrid extends HTMLElement {
         
         //odebrani prazdneho radku na konci
 	    if(mazeArray[mazeArray.length - 1].trim() == ""){
-	    	text.pop();
+	    	mazeArray.pop();
 	    }
 
 		this.dbgMazeText = mazeArray.slice(1).map(row => row.split('')); //for debugging dbgMazeText console.table(this.dbgMazeText)
