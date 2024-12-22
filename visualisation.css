@@ -8,6 +8,9 @@
 .visited{
     background: #c77e1f;
 }
+.green {
+    background: green;
+}
 /*add .skipped class?*/
 
 /*dark theme*/
