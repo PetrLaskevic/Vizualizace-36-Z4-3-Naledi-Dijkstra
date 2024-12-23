@@ -55,7 +55,7 @@ class DijkstraMazeApp{
 
         this.maze = text.slice(1).map(row => row.split('')); //for debugging dbgMazeText console.table(this.dbgMazeText)
 		this.dbgMazeText = this.maze;
-		console.log(text);
+		// console.log(text);
 
 		let grid = document.createElement("responsive-grid");
         [grid.rows, grid.columns] = text[0].split(' ').map(Number);

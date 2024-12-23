@@ -119,7 +119,7 @@ class ResponsiveGrid extends HTMLElement {
 	    }
 
 		this.dbgMazeText = mazeArray.slice(1).map(row => row.split('')); //for debugging dbgMazeText console.table(this.dbgMazeText)
-		console.log(mazeArray);
+		// console.log(mazeArray);
 
         //empty grid was created from the constructor, 
         //so now assign proper classes to the existing cells
@@ -162,6 +162,7 @@ class ResponsiveGrid extends HTMLElement {
 
     createGrid() {
         //Creates HTML fot the cells when the widget is constructed
+        console.time("createGrid");
         this.handleResize();
         for (let i = 0; i < this.rows * this.columns; i++) {
             const cell = document.createElement('div');
@@ -170,6 +171,7 @@ class ResponsiveGrid extends HTMLElement {
             this.grid.appendChild(cell);
         }
         this.adjustFontSize(this.grid, this.cellSize);
+        console.timeEnd("createGrid");
     }
 
     adjustFontSize(grid, cellSize) {
