@@ -35,6 +35,8 @@ class ResponsiveGrid extends HTMLElement {
                     align-items: center;
                     box-sizing: border-box; /* Include border in dimensions */
                     overflow: hidden; /* Ensure text does not overflow */
+                    font-size: var(--fsize);
+                    line-height: 1;
                 }
                 @media (prefers-color-scheme: dark) {
                     :root{
@@ -171,28 +173,24 @@ class ResponsiveGrid extends HTMLElement {
     }
 
     adjustFontSize(grid, cellSize) {
-        //Sets the maximum possible font size to cells, 
-        //so that the text of maximum length this.maxLength fits without overflow
-        const cells = grid.getElementsByClassName('cell');
-        let loopRan = false;
-        for (let cell of cells) {
-            let fontSize = cellSize / 2; // Initial font size guess
-            cell.style.fontSize = fontSize + 'px';
-            cell.style.lineHeight = 1;
-            
-            /*The font size ends up to be the same for all cells (nice) even when the length of text differs: i.e is 1 or 2
-            (demo in component7.js with random numbers)
-             => So, there is be a speed up when resizing the grid, by only computing the font size for the first cell*/
-            if (loopRan){
-                continue;
-            }
-            // Decrease font size until it fits within the cell's dimensions
-            while (fontSize > 0 && (cell.scrollWidth > cell.clientWidth || cell.scrollHeight > cell.clientHeight)) {
-                fontSize--;
-                cell.style.fontSize = fontSize + 'px';
-            }
-            loopRan = true;
+        // Sets the maximum possible font size to cells, 
+        // so that the text of maximum length this.maxLength fits without overflow
+        let cell = grid.querySelector(".cell");
+        if(cell == null){
+            //first time when the function is called from handleResize, the grid doesn't have any items
+            //in such case, return (the previous for loop wouldnt't have done anything anyway )
+            return;
         }
+        let fontSize = cellSize / 2; // Initial font size guess
+        let ranTimes = 0;
+        // while (fontSize > 0 && (cell.scrollWidth > cell.clientWidth || cell.scrollHeight > cell.clientHeight)) {
+        //     ranTimes++;
+        //     fontSize--;
+        //     cell.style.fontSize = fontSize + 'px';
+        // }
+        console.log(ranTimes);
+        console.log("new font size", fontSize);
+        grid.style.setProperty("--fsize", fontSize + "px");
     }
 }
 
