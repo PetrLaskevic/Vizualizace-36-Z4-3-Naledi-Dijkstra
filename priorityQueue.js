@@ -183,9 +183,6 @@ class priorityQueue {
     let coordinates, priority, column, row;
     [coordinates, priority] = element;
     [row, column] = coordinates;
-
-    console.warn(coordinates)
-    console.warn("priority", priority);
     
     this.heap.push(row, column, priority);
   }
