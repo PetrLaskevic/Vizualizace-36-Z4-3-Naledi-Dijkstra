@@ -184,16 +184,16 @@ class DijkstraMazeApp{
 		return lastValueInBounds	;
 	}
 	syncWait(n){
-		for(let x = 0; x < n; x++){
-			for(let x = 0; x < n; x++){
-				for(let x = 0; x < n; x++){
-					for(let x = 0; x < n; x++){
-						// console.log(x);
-						x;
-					}
-				}
-			}
-		}
+		// for(let x = 0; x < n; x++){
+		// 	for(let x = 0; x < n; x++){
+		// 		for(let x = 0; x < n; x++){
+		// 			for(let x = 0; x < n; x++){
+		// 				// console.log(x);
+		// 				x;
+		// 			}
+		// 		}
+		// 	}
+		// }
 	}
 	async walkThroughCesta(cesta, delkyHranList){
 		let [x,y] = this.startCoordinates;
@@ -210,9 +210,9 @@ class DijkstraMazeApp{
 			//with async wait (no matter, how big or small, the yellow flashes on the corner (selectedOnWalkThrough gets removed and put back))
 			// await wait(2	);
 			//with sync wait, it does not flicker (it stays on on the cornern the whole time)
-				this.syncWait(10	);
-				this.syncWait(10	);
-				this.syncWait(10	);
+				// this.syncWait(10	);
+				// this.syncWait(10	);
+				// this.syncWait(10	);
 		}
 	}
 	getLen(x1,y1,x2,y2){
@@ -300,6 +300,7 @@ class DijkstraMazeApp{
 	}
 		
 	async runDijkstra(){
+		// return;
 		// let x,y, direction;
 		let exploredNodes = new Set();
 		this.fronta.push([this.startCoordinates, 0]);
