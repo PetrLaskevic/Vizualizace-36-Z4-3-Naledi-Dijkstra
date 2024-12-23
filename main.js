@@ -1,5 +1,5 @@
 import {mazeTextToGraph, prettyPrintGraf} from "./graphGen.js";
-import {DijkstraMazeApp} from "./renderGrid.js";
+import {DijkstraMazeApp} from "./render.js";
 
 
 function whichLineEnding(source) {
