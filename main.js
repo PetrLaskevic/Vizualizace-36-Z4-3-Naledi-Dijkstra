@@ -11,26 +11,48 @@ function whichLineEnding(source) {
 	return 'LF' //Linux
 }
 
+function makePopup(heading, text, id){
+	//For trusted input only (no input sanitisation here)
+	//I use it for exceptions my program generates, and never any user input
+	let div = document.createElement("div");
+	div.className = "popup";
+	//TODO: Add code to actually destroy the popup and not hide it when Ok is pressed
+	div.innerHTML = `
+	<p class="heading"><b>${heading}</b></p>
+	<p>${text}</p>
+	<div style="text-align: right;">
+	<button id="${id}" class="ok" onclick="this.parentElement.parentElement.classList.add('hidden')">OK</button>
+	</div>
+	`;
+	document.body.appendChild(div);
+}
+
 function start(unsplitMazeText){
-	let text = "";
-	let lineEnding = whichLineEnding(unsplitMazeText);
-	if(lineEnding == "CRLF"){
-		text = unsplitMazeText.split("\r\n");
-	}else if(lineEnding == "LF"){
-		text = unsplitMazeText.split("\n");
-	}
+	try{
+		let text = "";
+		let lineEnding = whichLineEnding(unsplitMazeText);
+		if(lineEnding == "CRLF"){
+			text = unsplitMazeText.split("\r\n");
+		}else if(lineEnding == "LF"){
+			text = unsplitMazeText.split("\n");
+		}
 
-	let graf = mazeTextToGraph(unsplitMazeText);
-	prettyPrintGraf(graf);
+		let graf = mazeTextToGraph(unsplitMazeText);
+		prettyPrintGraf(graf);
 
-	if(mazeAppClassHolderVariable != undefined){
-		mazeAppClassHolderVariable.zcelaHotovo = true;
-		mazeAppClassHolderVariable.hideMaze();
+		if(mazeAppClassHolderVariable != undefined){
+			mazeAppClassHolderVariable.zcelaHotovo = true;
+			mazeAppClassHolderVariable.hideMaze();
+		}
+		
+		mazeAppClassHolderVariable = new DijkstraMazeApp(graf);
+		mazeAppClassHolderVariable.renderMaze(text);
+		mazeAppClassHolderVariable.startDijkstra(); //entry point to our actual program
+	}catch(error){
+		console.error(error);
+		//Show the user errors thrown by mazeTextToGraph for example
+		makePopup(error.message, "", "error");
 	}
-	
-	mazeAppClassHolderVariable = new DijkstraMazeApp(graf);
-	mazeAppClassHolderVariable.renderMaze(text);
-	mazeAppClassHolderVariable.startDijkstra(); //entry point to our actual program
 
 }
 
