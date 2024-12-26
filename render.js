@@ -71,7 +71,7 @@ class DijkstraMazeApp{
 		//(and = together with the body positioning, just accept, that it going to get weird when running more instances of the maze on one page)
 		// document.querySelector("body").appendChild(this.resultParagraph);
 		this.resultParagraph = document.querySelector(".presentResult");
-		this.resultParagraph.textContent = "";
+		this.resultParagraph.innerHTML = "<br>";
 
         this.graphicalMaze = grid;
 
@@ -227,6 +227,12 @@ class DijkstraMazeApp{
 		let counterOdKonce = 0;
 		let delkyHranList = [];
 		this.n = this.delkaCesty;
+
+		//C must always be there
+		if(!(pole in this.zJakehoPoleJsmeSemPrisli)){
+			document.getElementById("noPath").classList.remove("hidden");
+			return;
+		}
 		while(String(pole) != String(this.startCoordinates)){
 			[x1,y1] = this.zJakehoPoleJsmeSemPrisli[pole];
 			delkyHranList.push(this.getLen(x1, y1, pole[0], pole[1]));

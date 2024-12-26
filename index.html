@@ -98,6 +98,36 @@
             align-items: baseline;
         }
 
+        /*popup*/
+        .popup{
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            translate: -50% -50%;
+            background: white;
+            padding: 10px;
+            box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px; /*https://getcssscan.com/css-box-shadow-examples*/
+            border-radius: 3px;
+            overflow: auto;
+            max-height: 95%;
+            transition: ease opacity 0.5s;
+            visibility: visible
+        }
+        .popup > .heading{
+            margin-top: 0px;
+            font-size: 1.2rem;
+        }
+         .hidden{
+           visibility: hidden;
+            opacity: 0;
+        }
+        .ok{
+            width: 4.5em;
+            border: none;
+            padding: 7px;
+            border-radius: 3px
+        }
+
         /*dark theme*/
         @media (prefers-color-scheme: dark) {
             h1{
@@ -208,7 +238,15 @@
     <main>
         <!-- <responsive-grid rows="15" columns="50" max-length="3" cellStyles="visualisation.css"></responsive-grid> -->
     </main>
-    <p class="presentResult"></p>
+    <p class="presentResult"><br></p>
+    <div class="popup hidden" id="noPath">
+        <p class="heading">
+            <b>There is no path from <code class="startText">S</code> to <span class="endText">C</span> in the maze</b>
+        </p>
+        <div style="text-align: right;">
+            <button id="loadOnLocalServerOK" class="ok" onclick="this.parentElement.parentElement.classList.add('hidden')">OK</button>
+        </div>
+     </div>
     <script src="mazeGridComponent.js"></script>  <!--  component7.js"-->
     <script type="module" src="main.js"></script>
 </body>
