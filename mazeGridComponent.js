@@ -9,6 +9,8 @@ class ResponsiveGrid extends HTMLElement {
         this.columns = parseInt(this.getAttribute('columns'));
         this.maxLength = parseInt(this.getAttribute('max-length'));
         this.cellStyles = this.getAttribute("cellStyles");
+
+        this.maximumTextLengthSetSoFar = 0;
         
         const style = `
             <style>
@@ -100,12 +102,28 @@ class ResponsiveGrid extends HTMLElement {
     }
 
     setTextToCell(coordinates, text){
+        text = String(text);
         if(text.length > this.maxLength){
             throw Error(`Inserted text ${text} of length ${text.length} must not be longer than maxLength ${this.maxLength}`);
         }
         let row, column;
         [row, column] = coordinates;
+        //Right now under the assumption that shorter text than already is there cannot be assigned to a cell
+        //(here it is like so, for other algorithms I will need to implement an ordered map, a tree)
+        //needed to have a cell with longest text for tracking font size for adjustFontSize
         this.at(row, column).textContent = text;
+
+        if(text.length > this.maximumTextLengthSetSoFar){
+            this.maximumTextLengthSetSoFar = text.length;
+            console.log("hleda se nova velikost", text.length, text);
+            this.maximumTextLengthElement  =  this.at(row, column);
+
+            const { clientWidth, clientHeight } = this.shadowRoot.host.parentElement;
+            this.cellSize = Math.min(clientWidth / this.columns, clientHeight / this.rows);
+
+            this.findFontSizeForCell(this.maximumTextLengthElement, this.cellSize);
+        }
+        
     }
 
     //public function
@@ -170,29 +188,36 @@ class ResponsiveGrid extends HTMLElement {
             cell.textContent = " ".repeat(this.maxLength);
             this.grid.appendChild(cell);
         }
-        this.adjustFontSize(this.grid, this.cellSize);
+        // this.adjustFontSize(this.grid, this.cellSize); //this call is unnecesary here because it will essentially be called when first content will be inserted
         console.timeEnd("createGrid");
+    }
+
+    //finds optimal font size for the longest text cell
+    //which will be the font size for all other cells
+    findFontSizeForCell(cell, cellSize){
+        let fontSize = cellSize / 2; // Initial font size guess
+        cell.style.fontSize = fontSize + 'px';
+        cell.style.lineHeight = 1; //uz v zakladnim stylu, tady optional
+
+        // Decrease font size until it fits within the cell's dimensions
+        while (fontSize > 0 && (cell.scrollWidth > cell.clientWidth || cell.scrollHeight > cell.clientHeight)) {
+            fontSize--;
+            cell.style.fontSize = fontSize + 'px';
+        }
+        cell.style = ""; //nechceme, aby se michalo fsize a inline style
+        this.grid.style.setProperty("--fsize", fontSize + "px");
+        console.log("new font size", fontSize);
     }
 
     adjustFontSize(grid, cellSize) {
         // Sets the maximum possible font size to cells, 
         // so that the text of maximum length this.maxLength fits without overflow
-        let cell = grid.querySelector(".cell");
-        if(cell == null){
+        if(this.maximumTextLengthElement == undefined){
             //first time when the function is called from handleResize, the grid doesn't have any items
             //in such case, return (the previous for loop wouldnt't have done anything anyway )
             return;
         }
-        let fontSize = cellSize / 2; // Initial font size guess
-        let ranTimes = 0;
-        // while (fontSize > 0 && (cell.scrollWidth > cell.clientWidth || cell.scrollHeight > cell.clientHeight)) {
-        //     ranTimes++;
-        //     fontSize--;
-        //     cell.style.fontSize = fontSize + 'px';
-        // }
-        console.log(ranTimes);
-        console.log("new font size", fontSize);
-        grid.style.setProperty("--fsize", fontSize + "px");
+        this.findFontSizeForCell(this.maximumTextLengthElement, cellSize);
     }
 }
 
