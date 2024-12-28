@@ -41,13 +41,6 @@ class DijkstraMazeApp{
 	}
 	renderMaze(text){
 
-        //TODO: pridat nastaveni grid.maxLength 
-        //(na to ale nestaci max delka strany (protoze to pocita vzdalenosti od zacatku, a cesta teoreticky muze delat oka (smycky) )) 
-        //Idealne by to chtelo spustit Dijkstru a pak rict, kolik cifer to bude
-        //nebo muzu tam dat heuristiku ze max delka strany + jedna cifra (vetsinou staci)
-        //=> CELE SE TO RESI PROTOZE TO ZATIM (pred grid verzi) NESLO MENIT dynamicky
-        //=> zkusit jestli by slo u gridu (ze bych tam pripadne pridaval cifry podle potreby)
-
         //odebrani prazdneho radku na konci
 	    if(text[text.length - 1].trim() == ""){
 	    	text.pop();

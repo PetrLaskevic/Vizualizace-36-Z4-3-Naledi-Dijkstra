@@ -7,7 +7,6 @@ class ResponsiveGrid extends HTMLElement {
 
         this.rows = parseInt(this.getAttribute('rows'));
         this.columns = parseInt(this.getAttribute('columns'));
-        this.maxLength = parseInt(this.getAttribute('max-length'));
         this.cellStyles = this.getAttribute("cellStyles");
 
         this.maximumTextLengthSetSoFar = 0;
@@ -103,9 +102,6 @@ class ResponsiveGrid extends HTMLElement {
 
     setTextToCell(coordinates, text){
         text = String(text);
-        if(text.length > this.maxLength){
-            throw Error(`Inserted text ${text} of length ${text.length} must not be longer than maxLength ${this.maxLength}`);
-        }
         let row, column;
         [row, column] = coordinates;
         //Right now under the assumption that shorter text than already is there cannot be assigned to a cell
@@ -185,7 +181,6 @@ class ResponsiveGrid extends HTMLElement {
         for (let i = 0; i < this.rows * this.columns; i++) {
             const cell = document.createElement('div');
             cell.className = 'cell';
-            cell.textContent = " ".repeat(this.maxLength);
             this.grid.appendChild(cell);
         }
         // this.adjustFontSize(this.grid, this.cellSize); //this call is unnecesary here because it will essentially be called when first content will be inserted
@@ -197,21 +192,21 @@ class ResponsiveGrid extends HTMLElement {
     findFontSizeForCell(cell, cellSize){
         let fontSize = cellSize / 2; // Initial font size guess
         cell.style.fontSize = fontSize + 'px';
-        cell.style.lineHeight = 1; //uz v zakladnim stylu, tady optional
+        cell.style.lineHeight = 1; //in the base style, optional here
 
         // Decrease font size until it fits within the cell's dimensions
         while (fontSize > 0 && (cell.scrollWidth > cell.clientWidth || cell.scrollHeight > cell.clientHeight)) {
             fontSize--;
             cell.style.fontSize = fontSize + 'px';
         }
-        cell.style = ""; //nechceme, aby se michalo fsize a inline style
+        cell.style = ""; //to not mix fsize and inline style
         this.grid.style.setProperty("--fsize", fontSize + "px");
         console.log("new font size", fontSize);
     }
 
     adjustFontSize(grid, cellSize) {
         // Sets the maximum possible font size to cells, 
-        // so that the text of maximum length this.maxLength fits without overflow
+        // so that the text of maximum length in "this.maximumTextLengthElement" of length "this.maximumTextLengthSetSoFar" fits without overflow
         if(this.maximumTextLengthElement == undefined){
             //first time when the function is called from handleResize, the grid doesn't have any items
             //in such case, return (the previous for loop wouldnt't have done anything anyway )
