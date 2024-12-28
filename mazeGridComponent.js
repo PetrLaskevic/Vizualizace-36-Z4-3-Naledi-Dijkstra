@@ -1,6 +1,4 @@
 class ResponsiveGrid extends HTMLElement {
-    static get observedAttributes() { return ['rows', 'columns', 'max-length', 'cell-styles']; 
-    }
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
@@ -70,10 +68,6 @@ class ResponsiveGrid extends HTMLElement {
 
     disconnectedCallback() {
         window.removeEventListener('resize', this.handleResize.bind(this));
-    }
-
-    attributeChangedCallback(name, oldValue, newValue){
-        console.log("atribute changed called", name, oldValue, newValue);
     }
 
     //public function, returns the cell at the specified index
