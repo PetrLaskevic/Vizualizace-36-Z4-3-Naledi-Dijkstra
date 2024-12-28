@@ -1,6 +1,9 @@
 import {mazeTextToGraph, prettyPrintGraf} from "./graphGen.js";
 import {DijkstraMazeApp} from "./render.js";
 
+let mazePicker = document.getElementById("mazePicker");
+let mazeAppClassHolderVariable; //the instance of the maze app
+
 function whichLineEnding(source) {
 	var temp = source.indexOf('\n');
 	if (source[temp - 1] === '\r')
@@ -8,9 +11,50 @@ function whichLineEnding(source) {
 	return 'LF' //Linux
 }
 
-let mazePicker = document.getElementById("mazePicker");
-let mazeAppClassHolderVariable; //the instance of the maze app
-let zasobnik;
+function makePopup(heading, text, id){
+	//For trusted input only (no input sanitisation here)
+	//I use it for exceptions my program generates, and never any user input
+	let div = document.createElement("div");
+	div.className = "popup";
+	//TODO: Add code to actually destroy the popup and not hide it when Ok is pressed
+	div.innerHTML = `
+	<p class="heading"><b>${heading}</b></p>
+	<p>${text}</p>
+	<div style="text-align: right;">
+	<button id="${id}" class="ok" onclick="this.parentElement.parentElement.classList.add('hidden')">OK</button>
+	</div>
+	`;
+	document.body.appendChild(div);
+}
+
+function start(unsplitMazeText){
+	try{
+		let text = "";
+		let lineEnding = whichLineEnding(unsplitMazeText);
+		if(lineEnding == "CRLF"){
+			text = unsplitMazeText.split("\r\n");
+		}else if(lineEnding == "LF"){
+			text = unsplitMazeText.split("\n");
+		}
+
+		let graf = mazeTextToGraph(unsplitMazeText);
+		prettyPrintGraf(graf);
+
+		if(mazeAppClassHolderVariable != undefined){
+			mazeAppClassHolderVariable.zcelaHotovo = true;
+			mazeAppClassHolderVariable.hideMaze();
+		}
+		
+		mazeAppClassHolderVariable = new DijkstraMazeApp(graf);
+		mazeAppClassHolderVariable.renderMaze(text);
+		mazeAppClassHolderVariable.startDijkstra(); //entry point to our actual program
+	}catch(error){
+		console.error(error);
+		//Show the user errors thrown by mazeTextToGraph for example
+		makePopup(error.message, "", "error");
+	}
+
+}
 
 mazePicker.addEventListener("change", function(e){
 	let mazeSelected = mazePicker.value;
@@ -27,13 +71,7 @@ mazePicker.addEventListener("change", function(e){
 			document.getElementById("loadOnLocalServerOK").focus();
 			return;
 		}else{
-			//is not local server
-			if(location.hostname.endsWith("github.io")){
-				mazeUrl = window.location.href + mazeSelected;
-			}else{
-				//is local server
-				mazeUrl = "./"  + mazeSelected;
-			}	
+			mazeUrl = "./"  + mazeSelected;
 		}
 		
 		fetch(mazeUrl)
@@ -53,74 +91,24 @@ mazePicker.addEventListener("change", function(e){
 			}
 		})
    		.then( t => {
-			let text = "";
-			let lineEnding = whichLineEnding(t);
-			if(lineEnding == "CRLF"){
-				text = t.split("\r\n");
-			}else if(lineEnding == "LF"){
-				text = t.split("\n");
-			}
-
-			let graf = mazeTextToGraph(t);
-			prettyPrintGraf(graf);
-
-			//jenom pro test, mazeApp se bude hodne menit
-			if(mazeAppClassHolderVariable != undefined){
-				mazeAppClassHolderVariable.zcelaHotovo = true;
-				mazeAppClassHolderVariable.hideMaze();
-			   }
-			mazeAppClassHolderVariable = new DijkstraMazeApp(graf);
-			mazeAppClassHolderVariable.renderMaze(text);
-			mazeAppClassHolderVariable.startDijkstra(); //entry point to our actual program
-
-			
+			start(t);
 		});
 	}
 });
 
+
 //reading and parsing the input into a table to display as well as the correspoding 2D Array
 document.getElementById('inputfile').addEventListener('change', function(event) {
-	console.log(event);
-	let text = "";
-    var fr=new FileReader();
-    fr.onload=function(){
-		let lineEnding = whichLineEnding(fr.result);
-		if(lineEnding == "CRLF"){
-			text = fr.result.split("\r\n");
-		}else if(lineEnding == "LF"){
-			text = fr.result.split("\n");
-		}
-
-		let graf = mazeTextToGraph(fr.result);
-		prettyPrintGraf(graf);
-
-		//jenom pro test, mazeApp se bude hodne menit
-        if(mazeAppClassHolderVariable != undefined){
-			mazeAppClassHolderVariable.zcelaHotovo = true;
-			mazeAppClassHolderVariable.hideMaze();
-	   	}
-		mazeAppClassHolderVariable = new DijkstraMazeApp(graf);
-		mazeAppClassHolderVariable.renderMaze(text);
-		mazeAppClassHolderVariable.startDijkstra(); //entry point to our actual program
+    var fr = new FileReader();
+    fr.onload = function(){
+		start(fr.result);
+        // let grid = document.createElement("responsive-grid");
+        // [grid.rows, grid.columns] = text[0].split(' ').map(Number);
+        // document.querySelector("main").appendChild(grid);
     }
     fr.readAsText(this.files[0]);
     document.getElementById("selectedFileLabel").textContent = this.files[0].name;
 });
-
-
-//https://stackoverflow.com/a/53452241/11844784
-function wait(ms) {
-	if(ms > 0){
-		return new Promise((resolve, reject) => {
-			setTimeout(() => {
-				resolve(ms)
-			}, ms )
-		})
-	}else{
-		return;
-	}
-}
-
 
 
 console.log("yes");

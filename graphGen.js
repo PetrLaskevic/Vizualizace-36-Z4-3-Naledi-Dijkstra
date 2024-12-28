@@ -382,12 +382,12 @@ class HranyDoprava {
     }
 }
 function mazeTextToGraph(maze){
-    console.log(maze)
+    // console.log(maze)
     //accepts text as a maze, returns a Graf instance
     maze = maze.substring(maze.indexOf('\n') + 1); //+1 to not include the first \n character //first line are dimensions of maze. not needed here
-    console.log(maze)
+    // console.log(maze)
     maze = markEdgeStartsAndEnds(maze);
-    console.table(maze)
+    // console.table(maze)
     let graf = new Graf();
     let hranyNahoru = [];
     let hranyDolu = [];
