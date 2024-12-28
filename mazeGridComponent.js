@@ -176,15 +176,20 @@ class ResponsiveGrid extends HTMLElement {
 
     createGrid() {
         //Creates HTML fot the cells when the widget is constructed
-        console.time("createGrid");
         this.handleResize();
-        for (let i = 0; i < this.rows * this.columns; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'cell';
-            this.grid.appendChild(cell);
-        }
-        // this.adjustFontSize(this.grid, this.cellSize); //this call is unnecesary here because it will essentially be called when first content will be inserted
-        console.timeEnd("createGrid");
+        let divString = `<div class="cell"></div>`.repeat(this.rows * this.columns);
+        this.grid.innerHTML = divString;
+        // console.time("handleResize of empty grid");
+        // this.handleResize();
+        // console.timeEnd("handleResize of empty grid");
+        // console.time("createGrid");
+        // for (let i = 0; i < this.rows * this.columns; i++) {
+        //     const cell = document.createElement('div');
+        //     cell.className = 'cell';
+        //     this.grid.appendChild(cell);
+        // }
+        // // this.adjustFontSize(this.grid, this.cellSize); //this call is unnecesary here because it will essentially be called when first content will be inserted
+        // console.timeEnd("createGrid");
     }
 
     //finds optimal font size for the longest text cell
