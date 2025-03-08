@@ -71,7 +71,7 @@ mazePicker.addEventListener("change", function(e){
 			document.getElementById("loadOnLocalServerOK").focus();
 			return;
 		}else{
-			mazeUrl = "./"  + mazeSelected;
+			mazeUrl = "inputs/"  + mazeSelected;
 		}
 		
 		fetch(mazeUrl)
