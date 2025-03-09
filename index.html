@@ -56,7 +56,6 @@
         /*header styles*/
         .ctverecek{
             height: 1.25rem;
-            width: 1.25rem;
             aspect-ratio: 1/1;
         }
         .visited{
@@ -98,7 +97,15 @@
             font-size: 1.5rem !important;
             align-items: baseline;
         }
-
+        .inlineTextHolder{
+            display: inline-flex;
+            gap: 5px;
+            align-items: baseline;
+            width: fit-content;
+        }
+        .inlineTextHolder > .ctverecek{
+            height: 1.6ex;
+        }
         /*popup*/
         .popup{
             position: fixed;
@@ -245,16 +252,16 @@
             </div>
           </div>
     </header>
+    <p>
+        On this maze, allowed directions are up/down & left/right, 
+        and it is only allowed to change them when hitting <span class="inlineTextHolder"><span class="green ctverecek"></span><span class="greenText">wall</span></span>  squares.
+        The goal is to find the shortest path from <code class="startText">S</code> to <span class="endText">C</span>.
+        For comparison, <a href="https://petrlaskevic.github.io/Vizualizace-36-Z4-3-Naledi-DFS/">here's how DFS would fare</a>, finding <b>some</b> path (not nearly the shortest one).
+    </p>
     <main>
         <!-- <responsive-grid rows="15" columns="50" max-length="3" cellStyles="visualisation.css"></responsive-grid> -->
     </main>
     <p class="presentResult"><br></p>
-    <p>
-        On this maze, allowed directions are up/down & left/right, 
-        and it is only allowed to change them when hitting <span class="greenText">green</span> squares.
-        The goal is to find the shortest path from <code class="startText">S</code> to <span class="endText">C</span>.
-        For comparison, <a href="https://petrlaskevic.github.io/Vizualizace-36-Z4-3-Naledi-DFS/">here's how DFS would fare</a>, finding <b>some</b> path (not nearly the shortest one).
-    </p>
     <button id="stopDelays">Ukončit</button>
     <div class="popup hidden" id="noPath">
         <p class="heading">
