@@ -81,7 +81,12 @@ class DijkstraMazeApp{
 
         this.maze = text.slice(1).map(row => row.split('')); //for debugging dbgMazeText console.table(this.dbgMazeText)
 		this.dbgMazeText = this.maze;
-		// console.log(text);
+
+		//remove the old grid from DOM (for the previously selected maze) (until now it was simply hidden)
+		//Uses the ?. optional chaining operator to not throw an error on the first run,
+		// when the element is not on the page (returning null, which has no .remove())
+		// (instead of using . and try catch)
+		document.querySelector("responsive-grid")?.remove();
 
 		let grid = document.createElement("responsive-grid");
         [grid.rows, grid.columns] = text[0].split(' ').map(Number);
