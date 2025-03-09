@@ -1,16 +1,62 @@
 import { priorityQueue } from "./priorityQueue.js";
+
+//window. for good reason = to be available in main.js
+//or export because were in ES modules
+export const globalCancelToken = {
+	cancelled: false,
+	cancelAll: function () {
+	  this.cancelled = true;
+	},
+};
+
 //https://stackoverflow.com/a/53452241/11844784
 function wait(ms) {
-	if(ms > 0){
+	if(ms > 0){ //&& !globalCancelToken.cancelled
 		return new Promise((resolve, reject) => {
-	    setTimeout(() => {
-	      resolve(ms)
-	    }, ms )
-	  })
+			const timeoutID = setTimeout(() => {
+				if (!globalCancelToken.cancelled) {
+					resolve(ms)
+				}else{
+					// reject(new Error("Globally cancelled"));
+				}
+			}, ms );
+
+			if (globalCancelToken.cancelled) {
+				clearTimeout(timeoutID);
+				reject(new Error("Globally cancelled"));
+			}
+		})
 	}else{
 		return;
 	}
 }
+
+// function wait(ms) {
+// 	if(ms > 0 && !globalCancelToken.cancelled){
+// 		return new Promise((resolve, reject) => {
+// 			const timeoutID = setTimeout(() => {
+// 				if (!globalCancelToken.cancelled) {
+// 					resolve(ms)
+// 				}else{
+// 					// reject(new Error("Globally cancelled"));
+// 				}
+// 			}, ms );
+			
+// 			if (globalCancelToken.cancelled) {
+// 				clearTimeout(timeoutID);
+// 				reject(new Error("Globally cancelled"));
+// 			}
+// 		})
+// 	}else{
+// 		return;
+// 	}
+// }
+
+function stopAllAnimationDelays(){
+	globalCancelToken.cancelAll();
+}
+
+document.getElementById("stopDelays").addEventListener("click", stopAllAnimationDelays);
 
 let animationDelay = document.getElementById("visualisationDelayPicker");
 

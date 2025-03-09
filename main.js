@@ -1,5 +1,5 @@
 import {mazeTextToGraph, prettyPrintGraf} from "./graphGen.js";
-import {DijkstraMazeApp} from "./render.js";
+import {DijkstraMazeApp, globalCancelToken} from "./render.js";
 
 let mazePicker = document.getElementById("mazePicker");
 let mazeAppClassHolderVariable; //the instance of the maze app
@@ -28,6 +28,7 @@ function makePopup(heading, text, id){
 }
 
 function start(unsplitMazeText){
+	globalCancelToken.cancelled = false;
 	try{
 		let text = "";
 		let lineEnding = whichLineEnding(unsplitMazeText);
