@@ -28,7 +28,6 @@
             justify-content: center;
             align-items: center;
             width: 100%;
-            overflow: auto; /* Allow main content to scroll if needed */
         }
         responsive-grid {
             width: 100%;
@@ -126,6 +125,10 @@
             border: none;
             padding: 7px;
             border-radius: 3px
+        }
+
+        body > :not(main responsive-grid, main) {
+           padding: 5px
         }
 
         /*dark theme*/
@@ -239,6 +242,12 @@
         <!-- <responsive-grid rows="15" columns="50" max-length="3" cellStyles="visualisation.css"></responsive-grid> -->
     </main>
     <p class="presentResult"><br></p>
+    <p>
+        On this maze, allowed directions are up/down & left/right, 
+        and it is only allowed to change them when hitting <span class="greenText">green</span> squares.
+        The goal is to find the shortest path from <code class="startText">S</code> to <span class="endText">C</span>.
+        For comparison, <a href="https://petrlaskevic.github.io/Vizualizace-36-Z4-3-Naledi-DFS/">here's how DFS would fare</a>, finding <b>some</b> path (not nearly the shortest one).
+    </p>
     <button id="stopDelays">Ukončit</button>
     <div class="popup hidden" id="noPath">
         <p class="heading">
