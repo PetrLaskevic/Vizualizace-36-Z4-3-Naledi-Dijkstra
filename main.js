@@ -28,6 +28,7 @@ function makePopup(heading, text, id){
 }
 
 function start(unsplitMazeText){
+	globalCancelToken.cancelAll();
 	globalCancelToken.cancelled = false;
 	try{
 		let text = "";

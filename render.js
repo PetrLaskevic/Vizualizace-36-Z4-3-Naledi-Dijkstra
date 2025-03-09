@@ -4,53 +4,39 @@ import { priorityQueue } from "./priorityQueue.js";
 //or export because were in ES modules
 export const globalCancelToken = {
 	cancelled: false,
+	allTimeouts: new Set([]),
 	cancelAll: function () {
 	  this.cancelled = true;
+	  for(let timeoutID of this.allTimeouts){
+		clearInterval(timeoutID);
+	  }
 	},
 };
 
-//https://stackoverflow.com/a/53452241/11844784
+//originally https://stackoverflow.com/a/53452241/11844784
+//for a cancellable version I basically built https://stackoverflow.com/a/25345746 
+// (from https://stackoverflow.com/questions/25345701/how-to-cancel-timeout-inside-of-javascript-promise), the 2014 solution
+// the 2021 soluton supposedly uses a built in AbortController 
+// (which AFAIK has the advantage that it works on any function built on promises, including built in fetch - so is a way to cancel fetch)
+//But here, I believe this clearInterval / clearTimeout is adequate (fun fact, the two are interchangeable (src MDN))
 function wait(ms) {
 	if(ms > 0){ //&& !globalCancelToken.cancelled
 		return new Promise((resolve, reject) => {
 			const timeoutID = setTimeout(() => {
 				if (!globalCancelToken.cancelled) {
+					globalCancelToken.allTimeouts.delete(timeoutID);
 					resolve(ms)
 				}else{
+					globalCancelToken.allTimeouts.delete(timeoutID);
 					// reject(new Error("Globally cancelled"));
 				}
 			}, ms );
-
-			if (globalCancelToken.cancelled) {
-				clearTimeout(timeoutID);
-				reject(new Error("Globally cancelled"));
-			}
+			globalCancelToken.allTimeouts.add(timeoutID);
 		})
 	}else{
 		return;
 	}
 }
-
-// function wait(ms) {
-// 	if(ms > 0 && !globalCancelToken.cancelled){
-// 		return new Promise((resolve, reject) => {
-// 			const timeoutID = setTimeout(() => {
-// 				if (!globalCancelToken.cancelled) {
-// 					resolve(ms)
-// 				}else{
-// 					// reject(new Error("Globally cancelled"));
-// 				}
-// 			}, ms );
-			
-// 			if (globalCancelToken.cancelled) {
-// 				clearTimeout(timeoutID);
-// 				reject(new Error("Globally cancelled"));
-// 			}
-// 		})
-// 	}else{
-// 		return;
-// 	}
-// }
 
 function stopAllAnimationDelays(){
 	globalCancelToken.cancelAll();
