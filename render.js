@@ -8,9 +8,13 @@ export const globalCancelToken = {
 	cancelAll: function () {
 	  this.cancelled = true;
 	  for(let timeoutID of this.allTimeouts){
-		clearInterval(timeoutID);
+		clearTimeout(timeoutID);
 	  }
 	},
+	reset: function () {
+		this.cancelAll();
+		this.cancelled = false;
+	}
 };
 
 //originally https://stackoverflow.com/a/53452241/11844784
@@ -18,17 +22,14 @@ export const globalCancelToken = {
 // (from https://stackoverflow.com/questions/25345701/how-to-cancel-timeout-inside-of-javascript-promise), the 2014 solution
 // the 2021 soluton supposedly uses a built in AbortController 
 // (which AFAIK has the advantage that it works on any function built on promises, including built in fetch - so is a way to cancel fetch)
-//But here, I believe this clearInterval / clearTimeout is adequate (fun fact, the two are interchangeable (src MDN))
+//But here, I believe this clearInterval / clearTimeout is adequate (btw fun fact, the clearInterval / clearTimeout are interchangeable (src MDN))
 function wait(ms) {
-	if(ms > 0){ //&& !globalCancelToken.cancelled
+	if(ms > 0){
 		return new Promise((resolve, reject) => {
 			const timeoutID = setTimeout(() => {
+				globalCancelToken.allTimeouts.delete(timeoutID);
 				if (!globalCancelToken.cancelled) {
-					globalCancelToken.allTimeouts.delete(timeoutID);
 					resolve(ms)
-				}else{
-					globalCancelToken.allTimeouts.delete(timeoutID);
-					// reject(new Error("Globally cancelled"));
 				}
 			}, ms );
 			globalCancelToken.allTimeouts.add(timeoutID);
