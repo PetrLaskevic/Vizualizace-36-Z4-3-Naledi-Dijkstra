@@ -63,11 +63,19 @@ class ResponsiveGrid extends HTMLElement {
         this.shadowRoot.appendChild(link);
 
         this.createGrid();
-        window.addEventListener('resize', this.handleResize.bind(this));
+        //to fix window.removeEventListener in disconnectedCallback
+        //when this.handleResize.bind(this) was called there, 
+        // it did not remove the event listener due to Function References Not Matching
+        // Binding the function or using an anonymous function can create a new reference, causing removeEventListener to fail.
+        //src: https://medium.com/@aleksej.gudkov/lwc-removeeventlistener-not-working-1f8dcb417e30
+        //=> Storing the function reference with this.resizeCallback fixes the issue
+        this.resizeCallback = this.handleResize.bind(this);
+        window.addEventListener('resize', this.resizeCallback);
     }
 
     disconnectedCallback() {
-        window.removeEventListener('resize', this.handleResize.bind(this));
+        console.log("disconnected callback ran");
+        window.removeEventListener('resize', this.resizeCallback);
     }
 
     //public function, returns the cell at the specified index
