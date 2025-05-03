@@ -39,12 +39,6 @@ function wait(ms) {
 	}
 }
 
-function stopAllAnimationDelays(){
-	globalCancelToken.cancelAll();
-}
-
-document.getElementById("stopDelays").addEventListener("click", stopAllAnimationDelays);
-
 let animationDelay = document.getElementById("visualisationDelayPicker");
 
 class DijkstraMazeApp{
